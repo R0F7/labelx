@@ -1,7 +1,8 @@
-import { GalleryVerticalEnd } from "lucide-react"
+import { GalleryVerticalEnd } from "lucide-react";
 
-import { SignupForm } from "./signup-form"
-import { BoundingBoxIcon } from "@phosphor-icons/react/dist/ssr"
+import { SignupForm } from "./signup-form";
+import { BoundingBoxIcon } from "@phosphor-icons/react/dist/ssr";
+import Image from "next/image";
 
 export default function SignupPage() {
   return (
@@ -22,12 +23,14 @@ export default function SignupPage() {
         </div>
       </div>
       <div className="bg-muted relative hidden lg:block">
-        <img
-          src="/placeholder.svg"
-          alt="Image"
-          className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+        <Image
+          src="/banner_2_made_by_gemini.png"
+          alt="Signup Banner"
+          fill
+          priority
+          className="object-cover dark:brightness-[0.2] dark:grayscale"
         />
       </div>
     </div>
-  )
+  );
 }

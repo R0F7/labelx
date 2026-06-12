@@ -17,6 +17,7 @@ import { cache } from "react";
 import { redirect } from "next/navigation";
 
 export const auth = betterAuth({
+  baseURL: process.env.BETTER_AUTH_URL,
   database: drizzleAdapter(db, {
     provider: "pg", // or "mysql", "sqlite"
   }),
@@ -27,6 +28,11 @@ export const auth = betterAuth({
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    },
+    spotify: {
+      clientId: process.env.SPOTIFY_CLIENT_ID!,
+      clientSecret: process.env.SPOTIFY_CLIENT_SECRET!,
+      scopes: ["user-read-email", "user-read-private"],
     },
   },
   session: {
