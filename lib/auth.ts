@@ -18,6 +18,7 @@ import { redirect } from "next/navigation";
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
+  secret: process.env.BETTER_AUTH_SECRET!,
   database: drizzleAdapter(db, {
     provider: "pg", // or "mysql", "sqlite"
   }),
@@ -33,6 +34,14 @@ export const auth = betterAuth({
       clientId: process.env.SPOTIFY_CLIENT_ID!,
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET!,
       scopes: ["user-read-email", "user-read-private"],
+      profile(profile) {
+        return {
+          id: profile.id,
+          name: profile.display_name ?? "Spotify User",
+          email: profile.email ?? `${profile.id}@spotify.local`,
+          image: profile.images?.[0]?.url ?? null,
+        };
+      },
     },
   },
   session: {
