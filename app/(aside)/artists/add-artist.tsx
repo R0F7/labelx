@@ -392,6 +392,19 @@ export default function AddArtist({ artistData }: { artistData?: any | null }) {
       const method = isEditMode ? "PUT" : "POST";
 
       const res = await fetch(url, { method, body: formData });
+
+      if (res.status === 401) {
+        toast.error("Session expired or not logged in. Please login.");
+        router.push("/login");
+        return;
+      }
+
+      if (res.status === 403) {
+        toast.error("Please select an organization first.");
+        router.push("/select-organization");
+        return;
+      }
+
       const json = await res.json();
 
       if (!json?.success) {

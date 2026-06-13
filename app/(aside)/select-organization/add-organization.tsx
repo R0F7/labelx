@@ -1,4 +1,5 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,16 +14,26 @@ import {
 import { Field, FieldError, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { createOrganization } from "./actions";
+import { toast } from "sonner";
 
 export function AddOrganization() {
+  const [open, setOpen] = useState(false);
   const [state, formAction, pending] = useActionState(
     createOrganization,
     undefined,
   );
+
+  useEffect(() => {
+    if (state?.success) {
+      toast.success("Organization created successfully!");
+      setOpen(false);
+    }
+  }, [state]);
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">Create Organization</Button>
       </DialogTrigger>

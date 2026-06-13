@@ -28,8 +28,8 @@ export const artistsTable = pgTable("artists", {
   id: serial("id").primaryKey(),
   name: varchar("name").notNull(),
   logo: varchar("logo"),
-  firstName: varchar("first_name"),
-  lastName: varchar("last_name"),
+  dsp_connections: jsonb("dsp_connections").default([]), 
+  social_connections: jsonb("social_connections").default([]),
   createdBy: text("created_by")
     .references(() => user.id)
     .notNull(),

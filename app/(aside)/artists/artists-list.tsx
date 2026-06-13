@@ -79,9 +79,13 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { resolveS3Url } from "@/lib/s3-client";
 import { ConnectionIcons } from "./artist-interactive-cells";
-import { artists } from "@/lib/data/artists";
+// import { artists } from "@/lib/data/artists";
 import CursorPagination from "@/components/pagination-controls";
 import { RowActions } from "@/components/row-actions";
+import { verifySession } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { artistsTable } from "@/lib/schema";
+import { and, eq } from "drizzle-orm";
 
 async function ArtistsList({
   searchParams,
@@ -93,6 +97,19 @@ async function ArtistsList({
   }>;
 }) {
   const params = await searchParams;
+  const session = await verifySession();
+  const artists = await db
+    .select()
+    .from(artistsTable)
+    .where(
+      and(
+        eq(artistsTable.createdBy, session.user.id),
+        eq(
+          artistsTable.organizationId,
+          session?.session?.activeOrganizationId!,
+        ),
+      ),
+    );
 
   const query = params?.query?.toLowerCase() || "";
   const cursor = params?.cursor || null;

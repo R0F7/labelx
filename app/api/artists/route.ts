@@ -1,9 +1,10 @@
 import { resolveS3Url, s3Client } from "@/lib/s3-client";
-import { verifySession } from "@/lib/auth";
+import { auth, getSession, verifySession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { artistsTable } from "@/lib/schema";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import crypto from "crypto";
+import { headers } from "next/headers";
 
 export const POST = async (req: Request) => {
   try {
@@ -14,6 +15,22 @@ export const POST = async (req: Request) => {
     //     { status: 401 },
     //   );
     // }
+
+    const session = await getSession();
+
+    if (!session?.user) {
+      return Response.json(
+        { success: false, message: "Unauthorized: Please login" },
+        { status: 401 },
+      );
+    }
+
+    if (!session.session.activeOrganizationId) {
+      return Response.json(
+        { success: false, message: "Unauthorized: Select an organization" },
+        { status: 403 },
+      );
+    }
 
     const formData = await req.formData();
     const name = formData.get("name") as string;
@@ -68,12 +85,13 @@ export const POST = async (req: Request) => {
       name,
       dsp_connections,
       social_connections,
-      createdBy: "session.user.id",
-      organizationId: "session?.session?.activeOrganizationId!",
+      createdBy: session.user.id,
+      organizationId: session?.session?.activeOrganizationId!,
       ...(logoKey && { logo: logoKey }),
     };
-    console.log(data, resolveS3Url(logoKey!));
-
+    // console.log(data, resolveS3Url(logoKey!));
+    await db.insert(artistsTable).values(data);
+    
     // Insert into database
     // await db.insert(artistsTable).values({
     //   name,

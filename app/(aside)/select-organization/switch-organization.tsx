@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useActionState } from "react";
 import { switchOrganization } from "./actions";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -11,7 +12,8 @@ function SwitchOrganization({
 }: {
   organizations: Organization[];
 }) {
-    const [state,action,pending] = useActionState(switchOrganization,null)
+  const [state, action, pending] = useActionState(switchOrganization, null);
+
   return (
     <form className="space-y-4" action={action}>
       <FieldGroup>

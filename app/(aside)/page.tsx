@@ -51,6 +51,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { LogoutMenuItem } from "@/components/ui/logout-button"
 
 export const metadata: Metadata = {
   title: "Dashboard | TuneDistro",
@@ -58,6 +59,7 @@ export const metadata: Metadata = {
 }
 
 export default function DashboardPage() {
+  
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       {/* Top Navigation */}
@@ -119,7 +121,7 @@ export default function DashboardPage() {
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
+              <LogoutMenuItem />
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { db } from "@/lib/db"; // your drizzle instance
+import { db } from "@/lib/db";
 import { nextCookies } from "better-auth/next-js";
 import {
   admin,
@@ -30,6 +30,7 @@ export const auth = betterAuth({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     },
+
     spotify: {
       clientId: process.env.SPOTIFY_CLIENT_ID!,
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET!,
@@ -43,6 +44,7 @@ export const auth = betterAuth({
         };
       },
     },
+
   },
   session: {
     expiresIn: 60 * 60 * 24 * 7,
@@ -69,6 +71,12 @@ export const auth = betterAuth({
     }),
     nextCookies(),
   ],
+});
+
+export const getSession = cache(async () => {
+  return await auth.api.getSession({
+    headers: await headers(),
+  });
 });
 
 export const verifySession = cache(async () => {

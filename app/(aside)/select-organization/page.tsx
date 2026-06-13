@@ -22,6 +22,7 @@ const OrganizationCard = async () => {
     headers: await headers(),
   });
   console.log(organizations);
+  
   return (
     <>
       <Card>

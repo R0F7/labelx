@@ -3,6 +3,10 @@ import AddArtist from "./add-artist";
 import ArtistsList from "./artists-list";
 import { artists } from "@/lib/data/artists";
 import Search from "@/components/search";
+import { verifySession } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { artistsTable } from "@/lib/schema";
+import { and, eq } from "drizzle-orm";
 
 interface PageProps {
   searchParams: Promise<{
@@ -13,11 +17,38 @@ interface PageProps {
   }>;
 }
 
+// async function EditArtistLoader({ searchParams }: PageProps) {
+//   const { edit: editId } = await searchParams;
+//   if (!editId) return null;
+//   const artistData = artists.find((artist) => artist.id === editId);
+//   return <AddArtist artistData={artistData} />;
+// }
+
 async function EditArtistLoader({ searchParams }: PageProps) {
   const { edit: editId } = await searchParams;
   if (!editId) return null;
-  const artistData = artists.find((artist) => artist.id === editId);
-  return <AddArtist artistData={artistData} />;
+
+  try {
+    const session = await verifySession();
+    const activeOrgId = session.session.activeOrganizationId;
+    const [artistData] = await db
+      .select()
+      .from(artistsTable)
+      .where(
+        and(
+          eq(artistsTable.id, Number(editId)),
+          eq(artistsTable.organizationId, activeOrgId),
+        ),
+      )
+      .limit(1);
+
+    if (!artistData) return null;
+
+    return <AddArtist artistData={artistData} />;
+  } catch (error) {
+    console.error("Failed to fetch artist for editing:", error);
+    return null;
+  }
 }
 
 export default function Page({ searchParams }: PageProps) {

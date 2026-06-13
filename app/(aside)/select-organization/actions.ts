@@ -52,6 +52,7 @@ export const createOrganization = async (prev: any, formData: FormData) => {
     });
     console.log(organization);
     revalidatePath("/organization");
+    return { success: true };
   } catch (error) {
     console.log(error);
     const errMsg =
@@ -63,7 +64,7 @@ export const createOrganization = async (prev: any, formData: FormData) => {
 export const switchOrganization = async (prev: any, formData: FormData) => {
   try {
     const organizationId = formData.get("organizationId") as string;
-    console.log( "organizationId", organizationId);
+    console.log("organizationId", organizationId);
     const organization = await auth.api.setActiveOrganization({
       body: {
         organizationId,
