@@ -63,7 +63,7 @@ export default function ConnectionModalItem({
           <DialogHeader>
             <DialogTitle>Connect {platformName}</DialogTitle>
             <DialogDescription>
-              Enter the profile ID or link for {platformName}. Leave blank to
+              Enter the profile link for {platformName}. Leave blank to
               remove.
             </DialogDescription>
           </DialogHeader>

@@ -1,5 +1,10 @@
 import { resolveS3Url, s3Client } from "@/lib/s3-client";
-import { auth, getSession, verifySession } from "@/lib/auth";
+import {
+  auth,
+  getSession,
+  verifySession,
+  verifySessionForRoute,
+} from "@/lib/auth";
 import { db } from "@/lib/db";
 import { artistsTable } from "@/lib/schema";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
@@ -35,8 +40,6 @@ export const POST = async (req: Request) => {
     const formData = await req.formData();
     const name = formData.get("name") as string;
     const logo = formData.get("logo") as File | null;
-
-    // Get stringified JSON arrays from formData
     const dspConnectionsRaw = formData.get("dsp_connections") as string | null;
     const socialConnectionsRaw = formData.get("social_connections") as
       | string
@@ -49,7 +52,6 @@ export const POST = async (req: Request) => {
       });
     }
 
-    // Parse the JSON strings back into arrays safely
     let dsp_connections = [];
     let social_connections = [];
 
@@ -66,7 +68,7 @@ export const POST = async (req: Request) => {
 
     let logoKey: string | undefined = undefined;
 
-    if (logo) {
+    if (logo && logo.size > 0) {
       logoKey = crypto.randomUUID();
       const arrayBuffer = await logo.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
@@ -89,20 +91,9 @@ export const POST = async (req: Request) => {
       organizationId: session?.session?.activeOrganizationId!,
       ...(logoKey && { logo: logoKey }),
     };
-    // console.log(data, resolveS3Url(logoKey!));
-    await db.insert(artistsTable).values(data);
-    
+
     // Insert into database
-    // await db.insert(artistsTable).values({
-    //   name,
-    //   // Assuming your schema uses camelCase for these fields.
-    //   // If your schema uses snake_case, change them to dsp_connections and social_connections
-    //   dspConnections,
-    //   socialConnections,
-    //   createdBy: session.user.id,
-    //   organizationId: session?.session?.activeOrganizationId!,
-    //   ...(logoKey && { logo: logoKey }), // Only save the key if logo was actually uploaded
-    // });
+    await db.insert(artistsTable).values(data);
 
     return Response.json({
       success: true,

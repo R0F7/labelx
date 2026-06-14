@@ -256,7 +256,7 @@ import {
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { toast } from "sonner";
@@ -272,10 +272,10 @@ const ArtistFormSchema = z.object({
   name: z.string().trim().min(1, "Artist name is required"),
   logo: z.any().optional(),
   dsp_connections: z
-    .array(z.object({ name: z.enum(DSP_PLATFORMS), id: z.string() }))
+    .array(z.object({ name: z.enum(DSP_PLATFORMS), url: z.string() }))
     .optional(),
   social_connections: z
-    .array(z.object({ name: z.enum(SOCIAL_PLATFORMS), id: z.string() }))
+    .array(z.object({ name: z.enum(SOCIAL_PLATFORMS), url: z.string() }))
     .optional(),
 });
 
@@ -283,11 +283,13 @@ type ArtistFormType = z.infer<typeof ArtistFormSchema>;
 
 export default function AddArtist({ artistData }: { artistData?: any | null }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const isEditMode = !!artistData;
   const [open, setOpen] = useState(isEditMode);
   const [previewUrl, setPreviewUrl] = useState<string | null>(
-    isEditMode ?resolveS3Url(artistData?.logo) : null,
+    isEditMode ? resolveS3Url(artistData?.logo) : null,
   );
+  const currentParams = new URLSearchParams(searchParams.toString());
 
   const {
     register,
@@ -337,34 +339,39 @@ export default function AddArtist({ artistData }: { artistData?: any | null }) {
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen);
     if (!isOpen && isEditMode) {
-      router.push("/artists", { scroll: false });
+      currentParams.delete("edit");
+
+      router.replace(
+        `/artists${currentParams.toString() ? `?${currentParams.toString()}` : ""}`,
+        { scroll: false },
+      );
     }
   };
 
-  const handleSaveDsp = (name: string, id: string) => {
+  const handleSaveDsp = (name: string, url: string) => {
     const existingIndex = dspFields.findIndex((f) => f.name === name);
 
-    if (id.trim() === "") {
+    if (url.trim() === "") {
       if (existingIndex > -1) removeDsp(existingIndex);
     } else {
       if (existingIndex > -1) {
-        updateDsp(existingIndex, { name: name as any, id });
+        updateDsp(existingIndex, { name: name as any, url });
       } else {
-        appendDsp({ name: name as any, id });
+        appendDsp({ name: name as any, url });
       }
     }
   };
 
-  const handleSaveSocial = (name: string, id: string) => {
+  const handleSaveSocial = (name: string, url: string) => {
     const existingIndex = socialFields.findIndex((f) => f.name === name);
 
-    if (id.trim() === "") {
+    if (url.trim() === "") {
       if (existingIndex > -1) removeSocial(existingIndex);
     } else {
       if (existingIndex > -1) {
-        updateSocial(existingIndex, { name: name as any, id });
+        updateSocial(existingIndex, { name: name as any, url });
       } else {
-        appendSocial({ name: name as any, id });
+        appendSocial({ name: name as any, url });
       }
     }
   };
@@ -415,9 +422,21 @@ export default function AddArtist({ artistData }: { artistData?: any | null }) {
         toast.success(
           `Artist ${isEditMode ? "updated" : "added"} successfully!`,
         );
+
         reset();
+
+        if (isEditMode) {
+          currentParams.delete("edit");
+
+          router.replace(
+            `/artists${currentParams.toString() ? `?${currentParams.toString()}` : ""}`,
+            { scroll: false },
+          );
+        } else {
+          setOpen(false);
+        }
+
         router.refresh();
-        setOpen(false);
       }
     } catch (error) {
       console.error(error);
@@ -480,10 +499,15 @@ export default function AddArtist({ artistData }: { artistData?: any | null }) {
               </Field>
 
               {/* Image Preview Box */}
-              {previewUrl && (
+              {previewUrl && !previewUrl.endsWith("/null") && (
                 <div className="w-16 h-16 shrink-0 mt- rounded-md border border-border overflow-hidden bg-muted flex items-center justify-center">
                   <Image
-                    src={previewUrl}
+                    src={
+                      // previewUrl.endsWith("/null")
+                      //   ? "/banner.jpg"
+                      //   :
+                      previewUrl
+                    }
                     alt="Logo Preview"
                     className="w-full h-full object-cover"
                     width={64}

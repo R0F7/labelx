@@ -9,15 +9,22 @@ export default function CursorPagination({
   prevCursor,
   hasNext,
   hasPrev,
+  // query,
 }: any) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const navigate = (cursor: string | undefined, direction: "next" | "prev") => {
-    if (!cursor) return;
+  const navigate = (cursor?: string, direction?: "next" | "prev") => {
+    if (!cursor || !direction) return;
+
     const params = new URLSearchParams(searchParams.toString());
     params.set("cursor", cursor);
     params.set("direction", direction);
+
+    // if (query) {
+    //   params.set("query", query);
+    // }
+
     router.push(`?${params.toString()}`, { scroll: false });
   };
 

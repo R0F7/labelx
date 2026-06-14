@@ -1,12 +1,12 @@
 import React, { Suspense } from "react";
 import AddArtist from "./add-artist";
 import ArtistsList from "./artists-list";
-import { artists } from "@/lib/data/artists";
 import Search from "@/components/search";
 import { verifySession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { artistsTable } from "@/lib/schema";
 import { and, eq } from "drizzle-orm";
+import ArtistsListSkeleton from "./artists-list-skeleton";
 
 interface PageProps {
   searchParams: Promise<{
@@ -17,13 +17,6 @@ interface PageProps {
   }>;
 }
 
-// async function EditArtistLoader({ searchParams }: PageProps) {
-//   const { edit: editId } = await searchParams;
-//   if (!editId) return null;
-//   const artistData = artists.find((artist) => artist.id === editId);
-//   return <AddArtist artistData={artistData} />;
-// }
-
 async function EditArtistLoader({ searchParams }: PageProps) {
   const { edit: editId } = await searchParams;
   if (!editId) return null;
@@ -31,6 +24,7 @@ async function EditArtistLoader({ searchParams }: PageProps) {
   try {
     const session = await verifySession();
     const activeOrgId = session.session.activeOrganizationId;
+
     const [artistData] = await db
       .select()
       .from(artistsTable)
@@ -62,7 +56,7 @@ export default function Page({ searchParams }: PageProps) {
         <AddArtist />
       </div>
 
-      <Suspense fallback={<div>Loading Artists...</div>}>
+      <Suspense fallback={<ArtistsListSkeleton />}>
         <ArtistsList searchParams={searchParams} />
       </Suspense>
 

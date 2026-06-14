@@ -44,7 +44,6 @@ export const auth = betterAuth({
         };
       },
     },
-
   },
   session: {
     expiresIn: 60 * 60 * 24 * 7,
@@ -73,16 +72,17 @@ export const auth = betterAuth({
   ],
 });
 
-export const getSession = cache(async () => {
+export const getSession = async () => {
   return await auth.api.getSession({
     headers: await headers(),
   });
-});
+};
 
 export const verifySession = cache(async () => {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
+
   if (!session?.user) {
     redirect("/login");
   }
@@ -91,3 +91,33 @@ export const verifySession = cache(async () => {
   }
   return session;
 });
+
+export async function requireAuth() {
+  const session = await getSession();
+
+  if (!session?.user) {
+    return {
+      error: true,
+      response: Response.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      ),
+    };
+  }
+
+  if (!session.session?.activeOrganizationId) {
+    return {
+      error: true,
+      response: Response.json(
+        { success: false, message: "No organization selected" },
+        { status: 403 }
+      ),
+    };
+  }
+
+  return {
+    error: false,
+    session,
+    orgId: session.session.activeOrganizationId,
+  };
+}

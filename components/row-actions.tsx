@@ -23,10 +23,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation"; 
 
 interface RowActionsProps {
-  id: string;
+  id: number;
   displayTitle: string;
   resourceName: string; 
   viewUrl?: string;
@@ -41,8 +41,13 @@ export function RowActions({
   editQueryKey = "edit",
 }: RowActionsProps) {
   const router = useRouter();
+  const searchParams = useSearchParams(); 
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+
+  const currentParams = new URLSearchParams(searchParams.toString());
+  currentParams.set(editQueryKey, id.toString());
+  const editUrl = `?${currentParams.toString()}`;
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -50,6 +55,19 @@ export function RowActions({
       const res = await fetch(`/api/${resourceName}/${id}`, {
         method: "DELETE",
       });
+
+      if (res.status === 401) {
+        toast.error("Session expired or not logged in. Please login.");
+        router.push("/login");
+        return;
+      }
+
+      if (res.status === 403) {
+        toast.error("Please select an organization first.");
+        router.push("/select-organization");
+        return;
+      }
+
       const data = await res.json();
 
       if (data.success) {
@@ -88,7 +106,7 @@ export function RowActions({
           {/* Edit Option */}
           <DropdownMenuItem asChild>
             <Link
-              href={`?${editQueryKey}=${id}`}
+              href={editUrl} 
               scroll={false}
               className="cursor-pointer"
             >
