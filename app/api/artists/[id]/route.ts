@@ -33,9 +33,7 @@ export async function PUT(
 
     const name = formData.get("name") as string;
     const logo = formData.get("logo") as File | null;
-
     const dspConnectionsRaw = formData.get("dsp_connections") as string | null;
-
     const socialConnectionsRaw = formData.get("social_connections") as
       | string
       | null;

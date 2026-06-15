@@ -1,4 +1,5 @@
 "use client";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -15,10 +16,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { authClient } from "@/lib/auth-client";
 import { useTheme } from "next-themes";
+import Link from "next/link";
 
 const UserAvatar = () => {
   const { setTheme } = useTheme();
   const session = authClient.useSession();
+  
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -29,7 +32,7 @@ const UserAvatar = () => {
           <AvatarFallback className="text-xs">PG</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56">
+      <DropdownMenuContent className="w-56 mr-4 mt-2.5">
         <DropdownMenuLabel className="flex items-center gap-2">
           <Avatar>
             <AvatarImage
@@ -46,7 +49,7 @@ const UserAvatar = () => {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>Profile</DropdownMenuItem>
+          <DropdownMenuItem><Link href={"/profile"}>Profile</Link></DropdownMenuItem>
           <DropdownMenuItem>Billing</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />

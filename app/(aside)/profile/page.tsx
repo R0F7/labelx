@@ -1,18 +1,12 @@
 import React, { Suspense } from "react";
 import {
-  User,
   Settings,
   ShieldCheck,
   Bell,
   Key,
   Cloud,
   Zap,
-  Github,
-  Mail,
-  ExternalLink,
   Plus,
-  ChevronRightIcon,
-  ExternalLinkIcon,
 } from "lucide-react";
 
 import {
@@ -23,35 +17,20 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import { Capitalize } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  FingerprintIcon,
-  SignOut,
-  UserIcon,
-} from "@phosphor-icons/react/dist/ssr";
-import {
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemDescription,
-  ItemTitle,
-} from "@/components/ui/item";
-import Form from "next/form";
-import { authClient } from "@/lib/auth-client";
-import RevokeSession from "./revoke-session";
-import { revokeSession } from "./actions";
 
-export default function ProfilePage() {
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { verifySession } from "@/lib/auth";
+import { Skeleton } from "@/components/ui/skeleton";
+import { FingerprintIcon } from "@phosphor-icons/react/dist/ssr";
+import GeneralTab from "./_components/general-tab";
+import SessionTab from "./_components/session-tab";
+import UserCard from "./_components/user-card";
+
+export default async function ProfilePage() {
+  const session = await verifySession();
+
   return (
     <div className="min-h-screen p-4 md:p-8">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8">
@@ -63,7 +42,7 @@ export default function ProfilePage() {
             </div>
           }
         >
-          <UserCard />
+          <UserCard user={session.user} />
         </Suspense>
 
         {/* RIGHT COLUMN: Settings & Details */}
@@ -89,34 +68,7 @@ export default function ProfilePage() {
 
             {/* General Settings Tab */}
             <TabsContent value="general">
-              <Card className="border-none shadow-sm">
-                <CardHeader>
-                  <CardTitle>Profile Information</CardTitle>
-                  <CardDescription>
-                    Update your public identity and data preferences.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName">First Name</Label>
-                      <Input id="firstName" defaultValue="Alex" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName">Last Name</Label>
-                      <Input id="lastName" defaultValue="Parser" />
-                    </div>
-                    <div className="sm:col-span-2 space-y-2">
-                      <Label htmlFor="bio">Professional Bio</Label>
-                      <textarea
-                        id="bio"
-                        className="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                        placeholder="Focusing on real-time data ingestion pipelines..."
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <GeneralTab user={session.user} />
             </TabsContent>
 
             <Suspense fallback={<div></div>}>
@@ -223,92 +175,6 @@ export default function ProfilePage() {
         </div>
       </div>
     </div>
-  );
-}
-
-async function UserCard() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  return (
-    <div className="md:col-span-4 lg:col-span-3 space-y-6">
-      <Card className="border-none shadow-sm overflow-hidden py-0">
-        <div className="h-24 bg-gradient-to-r from-blue-600 to-indigo-600" />
-        <CardContent className="relative pt-0 text-center">
-          <Avatar className="h-24 w-24 border-4 border-white mx-auto -mt-12 mb-4 shadow-xl">
-            <AvatarImage src={session?.user?.image || ""} />
-            <AvatarFallback>
-              <UserIcon className="size-12" />
-            </AvatarFallback>
-          </Avatar>
-          <h3 className="text-xl font-bold">{session?.user?.name}</h3>
-          <p className="text-sm text-muted-foreground mb-4 italic">
-            @{session?.user?.username || session?.user?.email}
-          </p>
-          <div className="flex justify-center gap-2">
-            <Badge variant="secondary">
-              {Capitalize(session?.user?.role || "")}
-            </Badge>
-          </div>
-        </CardContent>
-        <Separator />
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3 text-sm text-muted-foreground hover:text-primary cursor-pointer transition-colors">
-            <Mail className="h-4 w-4" /> {session?.user?.email}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-async function SessionTab() {
-  const sessions = await auth.api.listSessions({
-    headers: await headers(),
-  });
-
-  return (
-    <TabsContent value="session">
-      <Card className="border-none shadow-sm">
-        <CardHeader>
-          <CardTitle>Sessions</CardTitle>
-          <CardDescription>
-            You have {sessions?.length || 0} sessions active
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex w-full flex-col gap-4">
-            {sessions && sessions.length > 0 ? (
-              sessions.map((session) => (
-                <Item key={session.id} variant="outline">
-                  <ItemContent>
-                    <ItemTitle>
-                      {session.ipAddress || "Unknown Device"}
-                    </ItemTitle>
-                    <ItemDescription>
-                      Last active:{" "}
-                      {new Date(session.updatedAt).toLocaleString()}
-                    </ItemDescription>
-                  </ItemContent>
-                  <ItemActions>
-                    <Form action={revokeSession}>
-                      <input type="hidden" name="token" value={session.token} />
-                      <Button>
-                        <SignOut className="size-4" />
-                      </Button>
-                    </Form>
-                  </ItemActions>
-                </Item>
-              ))
-            ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No active sessions found.
-              </p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    </TabsContent>
   );
 }
 
