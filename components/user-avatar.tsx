@@ -49,7 +49,7 @@ const UserAvatar = () => {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem><Link href={"/profile"}>Profile</Link></DropdownMenuItem>
+          <DropdownMenuItem asChild><Link href={"/profile"}>Profile</Link></DropdownMenuItem>
           <DropdownMenuItem>Billing</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
