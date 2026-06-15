@@ -4,8 +4,12 @@ import React, { Suspense } from "react";
 import AddLabel from "./_components/add-label";
 import LabelsList from "./_components/label-list";
 import LabelsListSkeleton from "./_components/labels-list-skeleton";
-import { labels } from "@/lib/data/labels";
+// import { labels } from "@/lib/data/labels";
 import Search from "@/components/search";
+import { verifySession } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { labelsTable } from "@/lib/schema";
+import { and, eq } from "drizzle-orm";
 
 interface PageProps {
   searchParams: Promise<{
@@ -20,8 +24,28 @@ async function EditLabelLoader({ searchParams }: PageProps) {
   const { edit: editId } = await searchParams;
   if (!editId) return null;
 
-  const labelData = labels.find((label) => label.id === editId);
-  return <AddLabel labelData={labelData} />;
+  try {
+    const session = await verifySession();
+    const activeOrgId = session.session.activeOrganizationId;
+
+    const [labelData] = await db
+      .select()
+      .from(labelsTable)
+      .where(
+        and(
+          eq(labelsTable.id, Number(editId)),
+          eq(labelsTable.organizationId, activeOrgId),
+        ),
+      )
+      .limit(1);
+
+    if (!labelData) return null;
+
+    return <AddLabel labelData={labelData} />;
+  } catch (error) {
+    console.error("Failed to fetch label for editing:", error);
+    return null;
+  }
 }
 
 function Page({ searchParams }: PageProps) {

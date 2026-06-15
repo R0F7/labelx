@@ -1,4 +1,5 @@
 import { organization, user } from "@/auth-schema";
+import { relations } from "drizzle-orm";
 import {
   integer,
   pgTable,

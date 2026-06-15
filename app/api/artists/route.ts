@@ -44,14 +44,7 @@ export const POST = async (req: Request) => {
     const socialConnectionsRaw = formData.get("social_connections") as
       | string
       | null;
-
-    if (!name) {
-      return Response.json({
-        success: false,
-        message: "Artist Name is required",
-      });
-    }
-
+      
     let dsp_connections = [];
     let social_connections = [];
 

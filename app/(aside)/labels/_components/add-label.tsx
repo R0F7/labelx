@@ -1,101 +1,3 @@
-// "use client";
-// import { Button } from "@/components/ui/button";
-// import {
-//   Dialog,
-//   DialogClose,
-//   DialogContent,
-//   DialogDescription,
-//   DialogFooter,
-//   DialogHeader,
-//   DialogTitle,
-//   DialogTrigger,
-// } from "@/components/ui/dialog";
-// import { Field, FieldGroup } from "@/components/ui/field";
-// import { Input } from "@/components/ui/input";
-// import { Label } from "@/components/ui/label";
-// import AvatarUpload from "@/components/upload-avatar";
-// import { FileMetadata } from "@/hooks/use-file-upload";
-// import { useRouter } from "next/navigation";
-// import { useState, useTransition } from "react";
-// import { toast } from "sonner";
-
-// export default function AddLabel() {
-//   const [logoFile, setLogoFile] = useState<FileMetadata | File | undefined>(
-//     undefined,
-//   );
-//   const [labelName, setLabelName] = useState<string>("");
-//   const [isOpen, setIsOpen] = useState(false);
-//   const [pending, startTransition] = useTransition();
-//   const router = useRouter();
-
-//   const handleSubmit = startTransition(async () => {
-//     if (!labelName) {
-//       toast.error("Label name is required");
-//       return;
-//     }
-//     const formData = new FormData();
-//     formData.append("labelName", labelName);
-//     if (logoFile) {
-//       formData.append("logoFile", logoFile as File);
-//     }
-//     const res = await fetch("/api/labels", {
-//       method: "POST",
-//       body: formData,
-//     });
-//     const data = await res.json();
-//     if (data.success) {
-//       toast.success("Label added successfully");
-//       setIsOpen(false);
-//       setLabelName("");
-//       setLogoFile(undefined);
-//       router.refresh();
-//     } else {
-//       toast.error(data.message);
-//     }
-//   });
-
-//   return (
-//     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-//       <form>
-//         <DialogTrigger asChild>
-//           <Button>Add Label</Button>
-//         </DialogTrigger>
-//         <DialogContent className="sm:max-w-sm">
-//           <DialogHeader>
-//             <DialogTitle>Add Label</DialogTitle>
-//             <DialogDescription>
-//               Fill the form below to add a new label
-//             </DialogDescription>
-//           </DialogHeader>
-//           <FieldGroup>
-//             <Field>
-//               <AvatarUpload onFileChange={(file) => setLogoFile(file?.file)} />
-//             </Field>
-//             <Field>
-//               <Label htmlFor="name-1">Label Name</Label>
-//               <Input
-//                 required
-//                 id="name-1"
-//                 name="name"
-//                 value={labelName}
-//                 onChange={(e) => setLabelName(e.target.value)}
-//               />
-//             </Field>
-//           </FieldGroup>
-//           <DialogFooter>
-//             <DialogClose asChild>
-//               <Button variant="outline">Cancel</Button>
-//             </DialogClose>
-//             <Button type="submit" onClick={handleSubmit} disabled={pending}>
-//               {pending ? "Adding..." : "Add Label"}
-//             </Button>
-//           </DialogFooter>
-//         </DialogContent>
-//       </form>
-//     </Dialog>
-//   );
-// }
-
 "use client";
 
 import AvatarUpload from "@/components/avatar-upload";
@@ -119,7 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { resolveS3Url } from "@/lib/s3-client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -134,8 +36,10 @@ type LabelFormType = z.infer<typeof LabelSchema>;
 
 export default function AddLabel({ labelData }: { labelData?: any | null }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const isEditMode = !!labelData;
   const [isOpen, setIsOpen] = useState(false);
+  const currentParams = new URLSearchParams(searchParams.toString());
 
   const {
     register,
@@ -179,11 +83,10 @@ export default function AddLabel({ labelData }: { labelData?: any | null }) {
         formData.append("logo", data.logo);
       }
 
-      const res = await fetch("/api/labels", {
-        method: "POST",
-        body: formData,
-      });
+      const url = isEditMode ? `/api/labels/${labelData.id}` : "/api/labels";
+      const method = isEditMode ? "PATCH" : "POST";
 
+      const res = await fetch(url, { method: method, body: formData });
       const json = await res.json();
 
       if (!json?.success) {
@@ -195,8 +98,19 @@ export default function AddLabel({ labelData }: { labelData?: any | null }) {
           `Label ${isEditMode ? "updated" : "added"} successfully!`,
         );
         reset();
+
+        if (isEditMode) {
+          currentParams.delete("edit");
+
+          router.replace(
+            `/labels${currentParams.toString() ? `?${currentParams.toString()}` : ""}`,
+            { scroll: false },
+          );
+        } else {
+          setIsOpen(false);
+        }
+
         router.refresh();
-        setIsOpen(false);
       }
     } catch (error) {
       console.error(error);
@@ -233,7 +147,7 @@ export default function AddLabel({ labelData }: { labelData?: any | null }) {
                   });
                 }}
                 defaultValue={
-                  isEditMode ? resolveS3Url(labelData.logo) : undefined
+                  isEditMode && labelData.logo ? resolveS3Url(labelData.logo) : undefined
                 }
               />
             </Field>

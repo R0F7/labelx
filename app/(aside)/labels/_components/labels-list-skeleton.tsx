@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/table";
 
 export default function LabelsListSkeleton() {
-  // Create an array of 5 items to simulate a loading list
   const skeletonRows = Array.from({ length: 5 });
 
   return (
@@ -17,26 +16,26 @@ export default function LabelsListSkeleton() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Label Name</TableHead>
             <TableHead>Label ID</TableHead>
+            <TableHead>Label Name</TableHead>
             <TableHead>Created By</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {skeletonRows.map((_, index) => (
             <TableRow key={index}>
+              {/* Label ID Column */}
+              <TableCell>
+                <Skeleton className="h-4 w-4" />
+              </TableCell>
+
               {/* Label Name & Avatar Column */}
               <TableCell className="py-2">
                 <div className="flex gap-4 items-center">
                   <Skeleton className="w-12 h-12 rounded" />
                   <Skeleton className="h-5 w-32" />
                 </div>
-              </TableCell>
-
-              {/* Label ID Column */}
-              <TableCell>
-                <Skeleton className="h-4 w-24" />
               </TableCell>
 
               {/* Created By Column (Double line) */}
@@ -48,8 +47,10 @@ export default function LabelsListSkeleton() {
               </TableCell>
 
               {/* Actions Column */}
-              <TableCell>
-                <Skeleton className="h-8 w-8 rounded-full" />
+              <TableCell className="text-right">
+                <div className="flex justify-end">
+                  <Skeleton className="h-4 w-4" />
+                </div>
               </TableCell>
             </TableRow>
           ))}

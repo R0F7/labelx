@@ -7,7 +7,7 @@ import crypto from "crypto";
 
 export const POST = async (req: Request) => {
   try {
-    // const session = await verifySession();
+    const session = await verifySession();
     // if(!session){
     //     return Response.json({success:false, message: "Unauthorized"},{status:401})
     // }
@@ -15,13 +15,6 @@ export const POST = async (req: Request) => {
     const formData = await req.formData();
     const labelName = formData.get("name") as string;
     const logoFile = formData.get("logo") as File;
-
-    if (!labelName) {
-      return Response.json(
-        { success: false, message: "Label name is required" },
-        { status: 400 },
-      );
-    }
 
     let logoKey: string | undefined = undefined;
 
@@ -41,16 +34,13 @@ export const POST = async (req: Request) => {
 
     const data = {
       name: labelName,
+      createdBy: session.user.id,
+      organizationId: session.session?.activeOrganizationId!,
       ...(logoKey && { logo: logoKey }),
     };
-    console.log(data, resolveS3Url(logoKey!));
 
-    // await db.insert(labelsTable).values({
-    //     name: labelName,
-    //     ...(logoFile && {logo: key}),
-    //     createdBy: session.user.id,
-    //     organizationId: session.session?.activeOrganizationId!,
-    // })
+    await db.insert(labelsTable).values(data)
+
     return Response.json(
       {
         success: true,
