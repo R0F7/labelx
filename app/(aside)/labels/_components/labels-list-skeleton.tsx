@@ -19,6 +19,7 @@ export default function LabelsListSkeleton() {
             <TableHead>Label ID</TableHead>
             <TableHead>Label Name</TableHead>
             <TableHead>Created By</TableHead>
+            <TableHead>Organization</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -38,6 +39,14 @@ export default function LabelsListSkeleton() {
                 </div>
               </TableCell>
 
+              {/* Created By Column (Double line) */}
+              <TableCell>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-3 w-36" />
+                </div>
+              </TableCell>
+              
               {/* Created By Column (Double line) */}
               <TableCell>
                 <div className="space-y-2">

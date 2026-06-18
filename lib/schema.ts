@@ -96,3 +96,15 @@ export const ticketsTable = pgTable("tickets", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+
+// export const labelsRelations = relations(labelsTable, ({ one }) => ({
+//   creator: one(user, {
+//     fields: [labelsTable.createdBy],
+//     references: [user.id],
+//   }),
+
+//   organization: one(organization, {
+//     fields: [labelsTable.organizationId],
+//     references: [organization.id],
+//   }),
+// }));

@@ -286,7 +286,6 @@ export default function AddRelease() {
         <Button>Add Release</Button>
       </DialogTrigger>
 
-      {/* মোডাল সাইজ বড় করে স্ক্রোলযোগ্য করা হয়েছে */}
       <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-y-auto">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pr-2">
           <DialogHeader>

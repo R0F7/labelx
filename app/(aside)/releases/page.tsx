@@ -5,6 +5,9 @@ import AddRelease from "./_components/add-release";
 import ReleaseTable from "./_components/release-table";
 import ReleaseGrid from "./_components/release-grid";
 import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 function Page() {
   return (
@@ -12,14 +15,23 @@ function Page() {
       <section className="p-4 space-y-4">
         <div className="w-full flex items-center justify-between gap-4">
           <Search />
-          <AddRelease />
+          {/* <AddRelease /> */}
+          <Link href="/releases/create">
+            <Button>
+              <Plus />
+              Add Release
+            </Button>
+          </Link>
         </div>
-        
+
         <Suspense
           fallback={
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
               {Array.from({ length: 12 }).map((r, i) => (
-                <div key={i} className="w-full space-y-3 bg-card p-3 border border-transparent">
+                <div
+                  key={i}
+                  className="w-full space-y-3 bg-card p-3 border border-transparent"
+                >
                   <Skeleton className="aspect-square w-full rounded-none" />
                   <div className="space-y-2 px-1">
                     <div className="flex items-center justify-between gap-2">
