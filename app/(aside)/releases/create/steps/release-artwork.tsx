@@ -19,7 +19,7 @@ export default function ReleaseArtwork({ formMethods }: ReleaseArtworkProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium">Select Artwork</h3>
+        <h3 className="text-xl font-semibold tracking-tight">Select Artwork</h3>
         <p className="text-xs text-muted-foreground">
           Pick a valid release artwork
         </p>

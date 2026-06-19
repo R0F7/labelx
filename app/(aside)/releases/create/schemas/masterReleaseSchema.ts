@@ -62,8 +62,43 @@ export const masterReleaseSchema = z.object({
       }
     }),
 
-  // Step 3 & 4 (আপাতত অপশনাল রাখছি যাতে ক্র্যাশ না করে)
-  tracks: z.array(z.any()).optional(),
+  // Step 3: Tracks Schema with Metadata Validation
+  tracks: z
+    .array(
+      z.object({
+        file: z.any().refine((file) => !!file, "Audio file is required"),
+        title: z.string().min(1, "Track Title is required"),
+        customError: z.string().optional(),
+        hash: z.string().optional(),
+        duration: z.number().optional(),
+
+        trackVersion: z.string().optional(),
+        artists: z
+          .array(
+            z.object({
+              artistType: z.string()
+              .min(1, "Artist type is required"),
+              artistData: z.object({
+                id: z.string()
+                .min(1, "Artist is required"),
+                name: z.string(),
+              }),
+            }),
+          )
+          .min(1, "At least one primary artist is required"),
+        primaryGenre: z.string().min(1, "Primary Genre is required"),
+        secondaryGenre: z.string().optional(),
+        
+        isrc: z.string().min(1, "ISRC is required"),
+        previewStart: z.string().optional(),
+        trackOrigin: z.string().min(1, "Track Origin is required"),
+        explicitContent: z.string().min(1, "Please select explicit status"),
+        trackLanguage: z.string().min(1, "Track Language is required"),
+        isInstrumental: z.boolean().default(false),
+      }),
+    )
+    .min(1, "At least one audio track is required"),
+
   stores: z.array(z.string()).optional(),
 });
 

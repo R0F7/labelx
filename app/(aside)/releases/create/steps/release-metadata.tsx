@@ -10,7 +10,6 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { MetadataFormValues } from "../schemas/metadata";
 import {
   artistTypeOptions,
   genres,
@@ -61,7 +60,7 @@ export default function ReleaseMetadata({ formMethods }: ReleaseMetadataProps) {
         <h2 className="text-xl font-semibold tracking-tight">
           Release Metadata
         </h2>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           Provide the essential metadata for your music release.
         </p>
       </div>

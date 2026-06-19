@@ -164,3 +164,13 @@ export const releaseTypeOptions = [
   { label: "EP", value: "ep" },
   { label: "Album", value: "album" },
 ];
+
+export const trackOriginOptions = [
+  { label: "Original Work", value: "original-work" },
+  { label: "Public Domain & Traditional", value: "public-domain-traditional" },
+];
+
+export const explicitContentOptions = [
+  { label: "Explicit", value: "Yes" },
+  { label: "No Explicit", value: "No" },
+];

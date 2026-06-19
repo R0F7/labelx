@@ -186,7 +186,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { MetadataFormValues, metadataSchema } from "./schemas/metadata";
+import { MetadataFormValues } from "./schemas/metadata";
 
 import ReleaseMetadata from "./steps/release-metadata";
 import ReleaseArtwork from "./steps/release-artwork";
@@ -194,7 +194,10 @@ import UploadTracks from "./steps/upload-tracks";
 import SelectStores from "./steps/select-stores";
 import ReviewRelease from "./steps/review-release";
 import { Button } from "@/components/ui/button";
-import { MasterReleaseFormValues, masterReleaseSchema } from "./schemas/masterReleaseSchema";
+import {
+  MasterReleaseFormValues,
+  masterReleaseSchema,
+} from "./schemas/masterReleaseSchema";
 
 const steps = [
   { id: 1, title: "Release Metadata" },
@@ -205,25 +208,8 @@ const steps = [
 ];
 
 export default function ReleaseForm() {
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(3);
 
-  // const methods = useForm<MetadataFormValues>({
-  //   resolver: zodResolver(metadataSchema),
-  //   defaultValues: {
-  //     metadataLanguage: "",
-  //     releaseType: "",
-  //     releaseTitle: "",
-  //     titleVersion: "",
-  //     artists: [{ artistType: "", artistData: { id: "", name: "" } }],
-  //     primaryGenre: "",
-  //     secondaryGenre: "",
-  //     labelData: { id: "", name: "" },
-  //     upc: "",
-  //     originalReleaseDate: "",
-  //     releaseDate: "",
-  //   },
-  //   mode: "onChange",
-  // });
   const methods = useForm<MasterReleaseFormValues>({
     resolver: zodResolver(masterReleaseSchema),
     defaultValues: {
@@ -239,6 +225,8 @@ export default function ReleaseForm() {
       originalReleaseDate: "",
       releaseDate: "",
       artwork: null,
+      tracks: [],
+      // tracks: [{artistType: "", selectArtist: "", primaryGenre: "", previewStart: "00:00", trackOrigin: "", explicitContent: "", trackLanguage: "", isInstrumental: false}],
     },
     mode: "onChange",
   });
@@ -248,16 +236,56 @@ export default function ReleaseForm() {
   const nextStep = async () => {
     if (currentStep === 1) {
       const isValid = await trigger([
-        "metadataLanguage", "releaseType", "releaseTitle", 
-        "artists", "primaryGenre", "labelData", 
-        "originalReleaseDate", "releaseDate"
+        "metadataLanguage",
+        "releaseType",
+        "releaseTitle",
+        "artists",
+        "primaryGenre",
+        "labelData",
+        "originalReleaseDate",
+        "releaseDate",
       ]);
       if (!isValid) return;
     }
-    
+
     if (currentStep === 2) {
       const isValid = await trigger(["artwork"]);
       if (!isValid) return;
+    }
+
+    if (currentStep === 3) {
+      const isValid = await trigger(["tracks"]);
+      const currentTracks = methods.getValues("tracks") || [];
+
+      if (currentTracks.length === 0) {
+        methods.setError("tracks.root", {
+          type: "manual",
+          message: "At least one audio track is required.",
+        });
+        return;
+      }
+
+      const hasAudioError = currentTracks.some((t: any) => !!t.customError);
+      const hasMissingMetadata = currentTracks.some((t: any) => {
+        return (
+          !t.title ||
+          t.artists.some((a: any) => !a.artistType || !a.artistData?.id) ||
+          !t.primaryGenre ||
+          !t.previewStart ||
+          !t.trackOrigin ||
+          !t.explicitContent ||
+          !t.trackLanguage
+        );
+      });
+
+      if (!isValid || hasAudioError || hasMissingMetadata) {
+        methods.setError("tracks.root", {
+          type: "manual",
+          message:
+            "Please fill up track details/metadata for all tracks before continuing.",
+        });
+        return;
+      }
     }
 
     if (currentStep < steps.length) {
@@ -281,9 +309,9 @@ export default function ReleaseForm() {
       case 1:
         return <ReleaseMetadata formMethods={methods} />;
       case 2:
-        return <ReleaseArtwork formMethods={methods}/>;
+        return <ReleaseArtwork formMethods={methods} />;
       case 3:
-        return <UploadTracks />;
+        return <UploadTracks formMethods={methods} />;
       case 4:
         return <SelectStores />;
       case 5:
