@@ -2,38 +2,27 @@
 
 import { useState } from "react";
 import { UseFormReturn, useFieldArray } from "react-hook-form";
-import { format } from "date-fns";
-import {
-  CalendarIcon,
-  Plus,
-  Trash2,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Field,
   FieldError,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { MetadataFormValues } from "../schemas/metadata";
-import { genres, languages, secondaryGenres } from "../../data/data";
+import {
+  artistTypeOptions,
+  genres,
+  languages,
+  releaseTypeOptions,
+  secondaryGenres,
+} from "../../data/data";
 import Cmdbox from "../../_components/cmdbox";
 import AsyncCmdbox from "../../_components/async-cmdbox";
+import FormDatePicker from "../../_components/form-date-picker";
+import { Plus, Trash2 } from "lucide-react";
+import FormSelect from "../../_components/form-select";
 
 interface ReleaseMetadataProps {
   formMethods: UseFormReturn<MetadataFormValues>;
@@ -42,8 +31,6 @@ interface ReleaseMetadataProps {
 export default function ReleaseMetadata({ formMethods }: ReleaseMetadataProps) {
   const {
     register,
-    setValue,
-    watch,
     control,
     formState: { errors },
   } = formMethods;
@@ -52,25 +39,8 @@ export default function ReleaseMetadata({ formMethods }: ReleaseMetadataProps) {
     control,
     name: "artists",
   });
-
-  const [openLang, setOpenLang] = useState(false);
-  const [openPrimaryGenre, setOpenPrimaryGenre] = useState(false);
-  const [openSecondaryGenre, setOpenSecondaryGenre] = useState(false);
-  const [openArtistCombobox, setOpenArtistCombobox] = useState<{
-    [key: number]: boolean;
-  }>({});
-  const [openLabel, setOpenLabel] = useState(false);
   const [artists, setArtists] = useState<{ id: number; name: string }[]>([]);
   const [labels, setLabel] = useState<{ id: number; name: string }[]>([]);
-
-  const metadataLanguage = watch("metadataLanguage");
-  const releaseType = watch("releaseType");
-  const primaryGenre = watch("primaryGenre");
-  const secondaryGenre = watch("secondaryGenre");
-  const originalReleaseDate = watch("originalReleaseDate");
-  const releaseDate = watch("releaseDate");
-  const watchedArtists = watch("artists");
-  const labelId = watch("labelId");
 
   const searchArtists = async (search: string) => {
     const res = await fetch(`/api/artists/search?query=${search}`);
@@ -118,39 +88,23 @@ export default function ReleaseMetadata({ formMethods }: ReleaseMetadataProps) {
 
         {/* Metadata Language */}
         <Cmdbox
-          name={"Metadata Language *"}
-          open={openLang}
-          setOpen={setOpenLang}
-          watcher={metadataLanguage}
+          label="Metadata Language *"
+          name="metadataLanguage"
+          control={control}
           data={languages}
-          placeholder={"Select a language"}
-          searchPlaceholder={"Search language..."}
-          emptyPlaceholder={"No language found."}
-          setValue={setValue}
-          setValueName={"metadataLanguage"}
-          errors={errors}
+          placeholder="Select a language"
+          searchPlaceholder="Search language..."
+          emptyPlaceholder="No language found."
         />
 
         {/* Release Type */}
-        <Field>
-          <FieldLabel>Release Type *</FieldLabel>
-          <Select
-            value={releaseType}
-            onValueChange={(value) =>
-              setValue("releaseType", value, { shouldValidate: true })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select release type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="single">Single</SelectItem>
-              <SelectItem value="ep">EP</SelectItem>
-              <SelectItem value="album">Album</SelectItem>
-            </SelectContent>
-          </Select>
-          <FieldError>{errors.releaseType?.message}</FieldError>
-        </Field>
+        <FormSelect
+          label="Release Type *"
+          name="releaseType"
+          control={control}
+          options={releaseTypeOptions}
+          placeholder="Select release type"
+        />
       </FieldGroup>
 
       {/* artist */}
@@ -161,7 +115,9 @@ export default function ReleaseMetadata({ formMethods }: ReleaseMetadataProps) {
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => append({ artistType: "", artistId: "" })}
+            onClick={() =>
+              append({ artistType: "", artistData: { id: "", name: "" } })
+            }
             className="h-8 gap-1"
           >
             <Plus className="h-3.5 w-3.5" /> Add Artist
@@ -171,56 +127,44 @@ export default function ReleaseMetadata({ formMethods }: ReleaseMetadataProps) {
         {fields.map((field, index) => (
           <div
             key={field.id}
-            className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start border-b md:border-b-0 pb-4 md:pb-0"
+            className="grid grid-cols-6 md:grid-cols-12 gap-4 items-start border-b md:border-b-0 pb-4 md:pb-0"
           >
-            <Field className="md:col-span-5">
-              <FieldLabel className="text-xs">Artist Type *</FieldLabel>
-              <Select
-                value={watchedArtists?.[index]?.artistType || ""}
-                onValueChange={(value) =>
-                  setValue(`artists.${index}.artistType`, value, {
-                    shouldValidate: true,
-                  })
-                }
+            <FormSelect
+              label="Artist Type *"
+              name={`artists.${index}.artistType`}
+              control={control}
+              options={artistTypeOptions}
+              placeholder="Select type"
+              className="col-span-5"
+            />
+
+            <div className="col-span-1 pt-6 flex justify-end md:justify-center md:hidden">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                disabled={fields.length === 1}
+                onClick={() => remove(index)}
+                className="text-destructive hover:bg-destructive/10 h-9 w-9"
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="primary">Primary Artist</SelectItem>
-                  <SelectItem value="secondary">Secondary Artist</SelectItem>
-                  <SelectItem value="producer">Producer</SelectItem>
-                  <SelectItem value="remixer">Remixer</SelectItem>
-                </SelectContent>
-              </Select>
-              <FieldError>
-                {errors.artists?.[index]?.artistType?.message}
-              </FieldError>
-            </Field>
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
 
             <div className="col-span-6">
               <AsyncCmdbox
                 label="Artist Name *"
-                open={openArtistCombobox[index] || false}
-                setOpen={(isOpen) =>
-                  setOpenArtistCombobox((prev) => ({
-                    ...prev,
-                    [index]: isOpen,
-                  }))
-                }
-                watcher={watchedArtists?.[index]?.artistId}
+                name={`artists.${index}.artistData`}
+                control={control}
                 data={artists}
                 placeholder="Search & select artist"
                 searchPlaceholder="Type artist name..."
                 emptyPlaceholder="No artist found."
                 onSearchChange={searchArtists}
-                setValue={setValue}
-                setValueName={`artists.${index}.artistId`}
-                errors={errors}
               />
             </div>
 
-            <div className="md:col-span-1 pt-6 flex justify-end md:justify-center">
+            <div className="md:col-span-1 pt-6 md:flex justify-end md:justify-center hidden">
               <Button
                 type="button"
                 variant="ghost"
@@ -244,48 +188,36 @@ export default function ReleaseMetadata({ formMethods }: ReleaseMetadataProps) {
       <FieldGroup className="grid grid-cols-1 md:grid-cols-2 gap-6 space-y-0">
         {/* Primary Genre */}
         <Cmdbox
-          name="Primary Genre *"
-          open={openPrimaryGenre}
-          setOpen={setOpenPrimaryGenre}
-          watcher={primaryGenre}
+          label="Primary Genre *"
+          name="primaryGenre"
+          control={control}
           data={genres}
-          placeholder={"Select primary genre"}
+          placeholder="Select primary genre"
           searchPlaceholder="Search genre..."
           emptyPlaceholder="No genre found."
-          setValue={setValue}
-          setValueName="primaryGenre"
-          errors={errors}
         />
 
         {/* Secondary Genre */}
         <Cmdbox
-          name="Secondary Genre (Optional)"
-          open={openSecondaryGenre}
-          setOpen={setOpenSecondaryGenre}
-          watcher={secondaryGenre}
+          label="Secondary Genre (Optional)"
+          name="secondaryGenre"
+          control={control}
           data={secondaryGenres}
           placeholder="Select secondary genre"
           searchPlaceholder="Search genre..."
           emptyPlaceholder="No genre found."
-          setValue={setValue}
-          setValueName="secondaryGenre"
-          errors={errors}
         />
 
         {/* Label ID */}
         <AsyncCmdbox
           label="Label *"
-          open={openLabel}
-          setOpen={setOpenLabel}
-          watcher={labelId}
+          name="labelData"
+          control={control}
           data={labels}
           placeholder="Select a label"
           searchPlaceholder="Search label..."
           emptyPlaceholder="No label found."
           onSearchChange={searchLabels}
-          setValue={setValue}
-          setValueName="labelId"
-          errors={errors}
         />
 
         {/* UPC */}
@@ -299,86 +231,20 @@ export default function ReleaseMetadata({ formMethods }: ReleaseMetadataProps) {
         </Field>
 
         {/* Original Release Date */}
-        <Field className="flex flex-col justify-end">
-          <FieldLabel>Original Release Date *</FieldLabel>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant={"outline"}
-                className={cn(
-                  "w-full pl-3 text-left font-normal",
-                  !originalReleaseDate && "text-muted-foreground",
-                )}
-              >
-                {originalReleaseDate ? (
-                  format(new Date(originalReleaseDate), "PPP")
-                ) : (
-                  <span>Pick a date</span>
-                )}
-                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={
-                  originalReleaseDate
-                    ? new Date(originalReleaseDate)
-                    : undefined
-                }
-                onSelect={(date) =>
-                  setValue(
-                    "originalReleaseDate",
-                    date ? date.toISOString() : "",
-                    { shouldValidate: true },
-                  )
-                }
-                disabled={(date) =>
-                  date > new Date() || date < new Date("1900-01-01")
-                }
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-          <FieldError>{errors.originalReleaseDate?.message}</FieldError>
-        </Field>
+        <FormDatePicker
+          label="Original Release Date *"
+          name="originalReleaseDate"
+          control={control}
+          disabledDays={(date) => date > new Date()}
+        />
 
         {/* Digital Release Date */}
-        <Field className="flex flex-col justify-end">
-          <FieldLabel>Digital Release Date *</FieldLabel>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant={"outline"}
-                className={cn(
-                  "w-full pl-3 text-left font-normal",
-                  !releaseDate && "text-muted-foreground",
-                )}
-              >
-                {releaseDate ? (
-                  format(new Date(releaseDate), "PPP")
-                ) : (
-                  <span>Pick a date</span>
-                )}
-                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={releaseDate ? new Date(releaseDate) : undefined}
-                onSelect={(date) =>
-                  setValue("releaseDate", date ? date.toISOString() : "", {
-                    shouldValidate: true,
-                  })
-                }
-                disabled={(date) => date < new Date("1900-01-01")}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-          <FieldError>{errors.releaseDate?.message}</FieldError>
-        </Field>
+        <FormDatePicker
+          label="Digital Release Date *"
+          name="releaseDate"
+          control={control}
+          disabledDays={(date) => date > new Date()}
+        />
       </FieldGroup>
     </div>
   );

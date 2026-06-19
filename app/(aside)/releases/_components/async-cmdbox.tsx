@@ -1,10 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { FieldErrors, UseFormSetValue } from "react-hook-form";
+import { Controller } from "react-hook-form";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -28,108 +27,104 @@ interface AsyncDataItem {
 
 interface AsyncCmdboxProps {
   label: string;
-  open: boolean;
-  setOpen: (open: boolean) => void;
-  watcher: string | undefined;
+  name: string;
+  control: any;
   data: AsyncDataItem[];
   placeholder: string;
   searchPlaceholder: string;
   emptyPlaceholder: string;
   onSearchChange: (value: string) => void;
-  setValue: UseFormSetValue<any>;
-  setValueName: string;
-  errors: FieldErrors<any>;
 }
 
 export default function AsyncCmdbox({
   label,
-  open,
-  setOpen,
-  watcher,
+  name,
+  control,
   data = [],
   placeholder,
   searchPlaceholder,
   emptyPlaceholder,
   onSearchChange,
-  setValue,
-  setValueName,
-  errors,
 }: AsyncCmdboxProps) {
-  const getNestedError = (errors: any, path: string) => {
-    return path.split(".").reduce((obj, key) => obj?.[key], errors);
-  };
-
-  const fieldError = getNestedError(errors, setValueName);
+  const [open, setOpen] = React.useState(false);
 
   return (
-    <Field className="flex flex-col">
-      <FieldLabel>{label}</FieldLabel>
+    <Controller
+      name={name}
+      control={control}
+      render={({ field: { value, onChange }, fieldState: { error } }) => {
+        const errorMessage = error?.message || (error as any)?.id?.message;
 
-      <Popover open={open} onOpenChange={setOpen} modal={true}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            className={cn(
-              "w-full justify-between font-normal text-left",
-              !watcher && "text-muted-foreground",
-            )}
-          >
-            {watcher
-              ? data.find((d) => d.id.toString() === watcher)?.name || watcher
-              : placeholder}
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
+        return (
+          <Field className="flex flex-col">
+            <FieldLabel>{label}</FieldLabel>
 
-        <PopoverContent className="p-0" align="start">
-          <Command shouldFilter={false} className="w-full">
-            <CommandInput
-              onValueChange={onSearchChange}
-              placeholder={searchPlaceholder}
-              className="w-full"
-            />
-            <CommandList className="w-full">
-              <CommandEmpty>{emptyPlaceholder}</CommandEmpty>
-              <CommandGroup className="w-full">
-                {data?.map((item) => (
-                  <CommandItem
-                    key={item.id}
-                    value={item.name}
-                    onSelect={() => {
-                      setValue(setValueName, item.id.toString(), {
-                        shouldValidate: true,
-                      });
-                      setOpen(false);
-                    }}
-                    className="w-full flex items-center justify-between"
-                  >
-                    <div className="flex items-center">
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          item.id.toString() === watcher
-                            ? "opacity-100"
-                            : "opacity-0",
-                        )}
-                      />
-                      {item.name}
-                    </div>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
+            <Popover open={open} onOpenChange={setOpen} modal={true}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  className={cn(
+                    "w-full justify-between font-normal text-left",
+                    !value?.id && "text-muted-foreground",
+                    errorMessage &&
+                      "border-destructive focus-visible:ring-destructive",
+                  )}
+                >
+                  {value?.id ? value.name : placeholder}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
 
-      {/* <FieldError>
-        {(errors?.[setValueName] as any)?.message ||
-          (errors?.artists as any)?.[setValueName.split(".")[1]]?.[
-            setValueName.split(".")[2]
-          ]?.message}
-      </FieldError> */}
-      <FieldError>{fieldError?.message}</FieldError>
-    </Field>
+              <PopoverContent
+                className="p-0"
+                align="start"
+              >
+                <Command shouldFilter={false} className="w-full">
+                  <CommandInput
+                    onValueChange={onSearchChange}
+                    placeholder={searchPlaceholder}
+                    className="w-full"
+                  />
+                  <CommandList className="w-full">
+                    <CommandEmpty>{emptyPlaceholder}</CommandEmpty>
+                    <CommandGroup className="w-full">
+                      {data?.map((item) => (
+                        <CommandItem
+                          key={item.id}
+                          value={item.name}
+                          onSelect={() => {
+                            onChange({
+                              id: item.id.toString(),
+                              name: item.name,
+                            });
+                            setOpen(false);
+                          }}
+                          className="w-full flex items-center justify-between"
+                        >
+                          <div className="flex items-center">
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                item.id.toString() === value?.id
+                                  ? "opacity-100"
+                                  : "opacity-0",
+                              )}
+                            />
+                            {item.name}
+                          </div>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+
+            <FieldError>{errorMessage}</FieldError>
+          </Field>
+        );
+      }}
+    />
   );
 }

@@ -79,7 +79,7 @@ export const genres = [
   { label: "Religious / Spiritual", value: "religious-spiritual" },
   { label: "Comedy / Spoken Word", value: "comedy-spoken-word" },
   { label: "Children’s Music", value: "childrens-music" },
-  { label: "Instrumental", value: "instrumental" }
+  { label: "Instrumental", value: "instrumental" },
 ];
 
 export const secondaryGenres = [
@@ -149,5 +149,18 @@ export const secondaryGenres = [
   { label: "Chill Instrumental", value: "chill-instrumental" },
   { label: "Piano", value: "piano" },
   { label: "Guitar", value: "guitar" },
-  { label: "Ambient", value: "ambient" }
+  { label: "Ambient", value: "ambient" },
+];
+
+export const artistTypeOptions = [
+  { label: "Primary Artist", value: "primary" },
+  { label: "Secondary Artist", value: "secondary" },
+  { label: "Producer", value: "producer" },
+  { label: "Remixer", value: "remixer" },
+];
+
+export const releaseTypeOptions = [
+  { label: "Single", value: "single" },
+  { label: "EP", value: "ep" },
+  { label: "Album", value: "album" },
 ];

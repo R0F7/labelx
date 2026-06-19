@@ -206,7 +206,6 @@ const steps = [
 export default function ReleaseForm() {
   const [currentStep, setCurrentStep] = useState(1);
 
-  // Initialize React Hook Form with Zod Schema
   const methods = useForm<MetadataFormValues>({
     resolver: zodResolver(metadataSchema),
     defaultValues: {
@@ -214,10 +213,10 @@ export default function ReleaseForm() {
       releaseType: "",
       releaseTitle: "",
       titleVersion: "",
-      artists: [{ artistType: "", artistId: "" }],
+      artists: [{ artistType: "", artistData: { id: "", name: "" } }],
       primaryGenre: "",
       secondaryGenre: "",
-      labelId: "",
+      labelData: { id: "", name: "" },
       upc: "",
       originalReleaseDate: "",
       releaseDate: "",
@@ -228,10 +227,9 @@ export default function ReleaseForm() {
   const { trigger, handleSubmit } = methods;
 
   const nextStep = async () => {
-    // Shudu matro Step 1 validation check korar jonno trigger() use kora hoyeche
     if (currentStep === 1) {
-      const isValid = await trigger(); // Zod diye ekhanei validate hobe
-      if (!isValid) return; // Error thakle samne jabe na
+      const isValid = await trigger();
+      if (!isValid) return;
     }
 
     if (currentStep < steps.length) {
@@ -269,7 +267,6 @@ export default function ReleaseForm() {
 
   return (
     <div className="space-y-8">
-      {/* Stepper (Apnar ager code tai thakbe) */}
       <div className="relative w-full pt-4">
         <div className="absolute top-9 inset-x-10 md:inset-x-16 lg:inset-x-28 h-px bg-border" />
         <div className="relative z-10 flex justify-center gap-6 md:gap-12">
@@ -291,11 +288,9 @@ export default function ReleaseForm() {
         </div>
       </div>
 
-      {/* Current Step Wrapped in Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         <div className="border rounded-lg p-6 bg-card">{renderStep()}</div>
 
-        {/* Footer Buttons */}
         <div className="flex justify-between">
           <Button
             type="button"
