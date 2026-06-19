@@ -194,6 +194,7 @@ import UploadTracks from "./steps/upload-tracks";
 import SelectStores from "./steps/select-stores";
 import ReviewRelease from "./steps/review-release";
 import { Button } from "@/components/ui/button";
+import { MasterReleaseFormValues, masterReleaseSchema } from "./schemas/masterReleaseSchema";
 
 const steps = [
   { id: 1, title: "Release Metadata" },
@@ -206,8 +207,25 @@ const steps = [
 export default function ReleaseForm() {
   const [currentStep, setCurrentStep] = useState(1);
 
-  const methods = useForm<MetadataFormValues>({
-    resolver: zodResolver(metadataSchema),
+  // const methods = useForm<MetadataFormValues>({
+  //   resolver: zodResolver(metadataSchema),
+  //   defaultValues: {
+  //     metadataLanguage: "",
+  //     releaseType: "",
+  //     releaseTitle: "",
+  //     titleVersion: "",
+  //     artists: [{ artistType: "", artistData: { id: "", name: "" } }],
+  //     primaryGenre: "",
+  //     secondaryGenre: "",
+  //     labelData: { id: "", name: "" },
+  //     upc: "",
+  //     originalReleaseDate: "",
+  //     releaseDate: "",
+  //   },
+  //   mode: "onChange",
+  // });
+  const methods = useForm<MasterReleaseFormValues>({
+    resolver: zodResolver(masterReleaseSchema),
     defaultValues: {
       metadataLanguage: "",
       releaseType: "",
@@ -220,6 +238,7 @@ export default function ReleaseForm() {
       upc: "",
       originalReleaseDate: "",
       releaseDate: "",
+      artwork: null,
     },
     mode: "onChange",
   });
@@ -228,7 +247,16 @@ export default function ReleaseForm() {
 
   const nextStep = async () => {
     if (currentStep === 1) {
-      const isValid = await trigger();
+      const isValid = await trigger([
+        "metadataLanguage", "releaseType", "releaseTitle", 
+        "artists", "primaryGenre", "labelData", 
+        "originalReleaseDate", "releaseDate"
+      ]);
+      if (!isValid) return;
+    }
+    
+    if (currentStep === 2) {
+      const isValid = await trigger(["artwork"]);
       if (!isValid) return;
     }
 
@@ -253,7 +281,7 @@ export default function ReleaseForm() {
       case 1:
         return <ReleaseMetadata formMethods={methods} />;
       case 2:
-        return <ReleaseArtwork />;
+        return <ReleaseArtwork formMethods={methods}/>;
       case 3:
         return <UploadTracks />;
       case 4:

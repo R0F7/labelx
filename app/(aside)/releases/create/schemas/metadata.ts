@@ -23,8 +23,8 @@ export const metadataSchema = z.object({
     name: z.string(),
   }),
   upc: z.string().optional(),
-originalReleaseDate: z.string().min(1, "Original release date is required"),
-releaseDate: z.string().min(1, "Digital release date is required"),
+  originalReleaseDate: z.string().min(1, "Original release date is required"),
+  releaseDate: z.string().min(1, "Digital release date is required"),
 });
 
 export type MetadataFormValues = z.infer<typeof metadataSchema>;

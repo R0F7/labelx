@@ -23,9 +23,10 @@ import AsyncCmdbox from "../../_components/async-cmdbox";
 import FormDatePicker from "../../_components/form-date-picker";
 import { Plus, Trash2 } from "lucide-react";
 import FormSelect from "../../_components/form-select";
+import { MasterReleaseFormValues } from "../schemas/masterReleaseSchema";
 
 interface ReleaseMetadataProps {
-  formMethods: UseFormReturn<MetadataFormValues>;
+  formMethods: UseFormReturn<MasterReleaseFormValues>;
 }
 
 export default function ReleaseMetadata({ formMethods }: ReleaseMetadataProps) {
