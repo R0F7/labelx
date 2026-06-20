@@ -1,186 +1,3 @@
-// "use client";
-
-// import { useState } from "react";
-// import ReleaseMetadata from "./steps/release-metadata";
-// import ReleaseArtwork from "./steps/release-artwork";
-// import UploadTracks from "./steps/upload-tracks";
-// import ReleaseStepper from "./release-stepper";
-// import SelectStores from "./steps/select-stores";
-// import { Button } from "@/components/ui/button";
-
-// export default function ReleaseForm() {
-//   const [step, setStep] = useState(1);
-
-//   const next = () => {
-//     setStep((prev) => Math.min(prev + 1, 4));
-//   };
-
-//   const prev = () => {
-//     setStep((prev) => Math.max(prev - 1, 1));
-//   };
-
-//   return (
-//     <div className="space-y-8">
-//       <ReleaseStepper step={step} />
-
-//       {step === 1 && <ReleaseMetadata />}
-//       {step === 2 && <ReleaseArtwork />}
-//       {step === 3 && <UploadTracks />}
-//       {step === 4 && <SelectStores />}
-
-//       <div className="flex justify-between">
-//         <Button
-//           disabled={step === 1}
-//           onClick={prev}
-//           variant="outline"
-//         >
-//           Previous
-//         </Button>
-
-//         <Button onClick={next}>
-//           {step === 4 ? "Submit Release" : "Next"}
-//         </Button>
-//       </div>
-//     </div>
-//   );
-// }
-
-// "use client";
-
-// import { useState } from "react";
-
-// import ReleaseMetadata from "./steps/release-metadata";
-// import ReleaseArtwork from "./steps/release-artwork";
-// import UploadTracks from "./steps/upload-tracks";
-// import SelectStores from "./steps/select-stores";
-// import ReviewRelease from "./steps/review-release";
-
-// import { Button } from "@/components/ui/button";
-
-// const steps = [
-//   {
-//     id: 1,
-//     title: "Release Metadata",
-//   },
-//   {
-//     id: 2,
-//     title: "Release Artwork",
-//   },
-//   {
-//     id: 3,
-//     title: "Upload Tracks",
-//   },
-//   {
-//     id: 4,
-//     title: "Select Stores",
-//   },
-//   {
-//     id: 5,
-//     title: "Review",
-//   },
-// ];
-
-// export default function ReleaseForm() {
-//   const [currentStep, setCurrentStep] = useState(1);
-
-//   const nextStep = () => {
-//     if (currentStep < steps.length) {
-//       setCurrentStep((prev) => prev + 1);
-//     }
-//   };
-
-//   const prevStep = () => {
-//     if (currentStep > 1) {
-//       setCurrentStep((prev) => prev - 1);
-//     }
-//   };
-
-//   const renderStep = () => {
-//     switch (currentStep) {
-//       case 1:
-//         return <ReleaseMetadata />;
-
-//       case 2:
-//         return <ReleaseArtwork />;
-
-//       case 3:
-//         return <UploadTracks />;
-
-//       case 4:
-//         return <SelectStores />;
-
-//       case 5:
-//         return <ReviewRelease />;
-
-//       default:
-//         return null;
-//     }
-//   };
-
-//   return (
-//     <div className="space-y-8">
-//       {/* Stepper */}
-//       <div className="relative w-full pt-4">
-//         <div className="absolute top-9 inset-x-10 md:inset-x-16 lg:inset-x-28 h-px bg-border" />
-
-//         <div className="relative z-10 flex justify-center gap-6 md:gap-12">
-//           {steps.map((step) => {
-//             const active = currentStep >= step.id;
-
-//             return (
-//               <div
-//                 key={step.id}
-//                 className="flex flex-col items-center"
-//               >
-//                 <div
-//                   className={`h-10 w-10 rounded-full flex items-center justify-center text-sm font-medium border transition-all
-//                   ${
-//                     active
-//                       ? "bg-primary text-primary-foreground border-primary"
-//                       : "bg-background text-muted-foreground border-border"
-//                   }`}
-//                 >
-//                   {step.id}
-//                 </div>
-
-//                 <p className="hidden md:block mt-2 text-xs text-center">
-//                   {step.title}
-//                 </p>
-//               </div>
-//             );
-//           })}
-//         </div>
-//       </div>
-
-//       {/* Current Step */}
-//       <div className="border rounded-lg p-6 bg-card">
-//         {renderStep()}
-//       </div>
-
-//       {/* Footer */}
-//       <div className="flex justify-between">
-//         <Button
-//           variant="outline"
-//           onClick={prevStep}
-//           disabled={currentStep === 1}
-//         >
-//           Previous
-//         </Button>
-
-//         {currentStep === steps.length ? (
-//           <Button>
-//             Create Release
-//           </Button>
-//         ) : (
-//           <Button onClick={nextStep}>
-//             Continue
-//           </Button>
-//         )}
-//       </div>
-//     </div>
-//   );
-// }
-
 "use client";
 
 import { useState } from "react";
@@ -226,7 +43,6 @@ export default function ReleaseForm() {
       releaseDate: "",
       artwork: null,
       tracks: [],
-      // tracks: [{artistType: "", selectArtist: "", primaryGenre: "", previewStart: "00:00", trackOrigin: "", explicitContent: "", trackLanguage: "", isInstrumental: false}],
     },
     mode: "onChange",
   });
@@ -265,16 +81,22 @@ export default function ReleaseForm() {
         return;
       }
 
-      const hasAudioError = currentTracks.some((t: any) => !!t.customError);
-      const hasMissingMetadata = currentTracks.some((t: any) => {
+      const hasAudioError = currentTracks.some((t) => !!t.customError);
+      const hasMissingMetadata = currentTracks.some((t) => {
+        const hasComposer = t.writers?.some((w) => w.role === "Composer");
+        const hasLyricist = t.writers?.some((w) => w.role === "Lyricist");
+
         return (
           !t.title ||
-          t.artists.some((a: any) => !a.artistType || !a.artistData?.id) ||
+          t.artists.some((a) => !a.artistType || !a.artistData?.id) ||
           !t.primaryGenre ||
-          !t.previewStart ||
+          !t.isrc ||
           !t.trackOrigin ||
           !t.explicitContent ||
-          !t.trackLanguage
+          !t.trackLanguage ||
+          !hasComposer ||
+          !hasLyricist ||
+          t.writers.some((a) => !a.role || !a.name)
         );
       });
 

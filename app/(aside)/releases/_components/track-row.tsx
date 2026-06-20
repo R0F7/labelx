@@ -1,16 +1,36 @@
-import React from "react";
+import React, { useState } from "react";
 import { MasterReleaseFormValues } from "../create/schemas/masterReleaseSchema";
-import { useFieldArray, UseFormReturn, useWatch } from "react-hook-form";
+import {
+  Controller,
+  useFieldArray,
+  UseFormReturn,
+  useWatch,
+} from "react-hook-form";
 import { CheckCircle2, Pencil, Plus, Trash2 } from "lucide-react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import FormSelect from "./form-select";
-import { artistTypeOptions, explicitContentOptions, genres, languages, secondaryGenres, trackOriginOptions } from "../data/data";
+import {
+  artistTypeOptions,
+  explicitContentOptions,
+  genres,
+  languages,
+  secondaryGenres,
+  trackOriginOptions,
+} from "../data/data";
 import AsyncCmdbox from "./async-cmdbox";
 import Cmdbox from "./cmdbox";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
+import { TrackWriters } from "./track-writers";
 
 export default function TrackRow({
   field,
@@ -18,12 +38,14 @@ export default function TrackRow({
   formMethods,
   removeTrack,
   isMetadataComplete,
+  setValue,
 }: {
   field: any;
   index: number;
   formMethods: UseFormReturn<MasterReleaseFormValues>;
   removeTrack: (index: number) => void;
-  isMetadataComplete:any
+  isMetadataComplete: any;
+  setValue: any;
 }) {
   const {
     control,
@@ -32,8 +54,8 @@ export default function TrackRow({
     formState: { errors },
   } = formMethods;
 
-  const [isOpen, setIsOpen] = React.useState(false);
-  const [artistsList, setArtistsList] = React.useState<
+  const [isOpen, setIsOpen] = useState(false);
+  const [artistsList, setArtistsList] = useState<
     { id: number; name: string }[]
   >([]);
 
@@ -65,6 +87,21 @@ export default function TrackRow({
     } catch (err) {
       console.error("Failed to search artists");
     }
+  };
+
+  const handleGenerateISRC = () => {
+    const country = "QZ";
+    const registrant = "LBX";
+    const year = new Date().getFullYear().toString().slice(-2);
+
+    const randomTrackId = Math.floor(10000 + Math.random() * 90000).toString();
+
+    const generatedISRC = `${country}${registrant}${year}${randomTrackId}`;
+
+    setValue(`tracks.${index}.isrc`, generatedISRC, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
   };
 
   return (
@@ -127,6 +164,11 @@ export default function TrackRow({
                     <Input
                       placeholder="e.g. Pure Tone"
                       {...register(`tracks.${index}.title` as const)}
+                      className={
+                        trackErrors?.title
+                          ? "border-destructive focus-visible:ring-destructive"
+                          : ""
+                      }
                     />
                     <FieldError>{trackErrors?.title?.message}</FieldError>
                   </Field>
@@ -242,10 +284,24 @@ export default function TrackRow({
 
                   <div className="grid grid-cols-2 gap-3">
                     <Field>
-                      <FieldLabel>Track ISRC *</FieldLabel>
+                      <FieldLabel className="flex items-center gap-2">
+                        Track ISRC *
+                        <button
+                          type="button"
+                          onClick={handleGenerateISRC}
+                          className="text-xs text-primary font-medium hover:underline focus:outline-none"
+                        >
+                          ( Generate ISRC )
+                        </button>
+                      </FieldLabel>
                       <Input
-                        placeholder="e.g. 444444444"
+                        placeholder="e.g. QZDIM2612345"
                         {...register(`tracks.${index}.isrc` as const)}
+                        className={
+                          trackErrors?.isrc
+                            ? "border-destructive focus-visible:ring-destructive"
+                            : ""
+                        }
                       />
                       <FieldError>{trackErrors?.isrc?.message}</FieldError>
                     </Field>
@@ -256,9 +312,6 @@ export default function TrackRow({
                         placeholder="e.g. 00:00"
                         {...register(`tracks.${index}.previewStart` as const)}
                       />
-                      <FieldError>
-                        {trackErrors?.previewStart?.message}
-                      </FieldError>
                     </Field>
                   </div>
 
@@ -290,7 +343,7 @@ export default function TrackRow({
                     emptyPlaceholder="No language found."
                   />
 
-                  <div className="flex items-center justify-between border border-border rounded-xl p-4 bg-accent/10 mt-2">
+                  <div className="flex items-center justify-between border border-border rounded-md p-4 bg-accent/10 mt-2">
                     <div>
                       <p className="text-xs font-semibold text-foreground">
                         Instrumental Track
@@ -299,12 +352,24 @@ export default function TrackRow({
                         Is this track without any vocals?
                       </p>
                     </div>
-                    <input
-                      type="checkbox"
-                      {...register(`tracks.${index}.isInstrumental` as const)}
-                      className="h-4 w-4 accent-emerald-500 rounded"
+                    <Controller
+                      control={control}
+                      name={`tracks.${index}.isInstrumental`}
+                      render={({ field }) => (
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          className="h-4 w-4 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
+                        />
+                      )}
                     />
                   </div>
+
+                  <TrackWriters
+                    control={control}
+                    trackIndex={index}
+                    errors={errors}
+                  />
                 </div>
               </div>
 

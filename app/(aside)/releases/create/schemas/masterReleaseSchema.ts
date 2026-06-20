@@ -76,11 +76,9 @@ export const masterReleaseSchema = z.object({
         artists: z
           .array(
             z.object({
-              artistType: z.string()
-              .min(1, "Artist type is required"),
+              artistType: z.string().min(1, "Artist type is required"),
               artistData: z.object({
-                id: z.string()
-                .min(1, "Artist is required"),
+                id: z.string().min(1, "Artist is required"),
                 name: z.string(),
               }),
             }),
@@ -88,13 +86,37 @@ export const masterReleaseSchema = z.object({
           .min(1, "At least one primary artist is required"),
         primaryGenre: z.string().min(1, "Primary Genre is required"),
         secondaryGenre: z.string().optional(),
-        
-        isrc: z.string().min(1, "ISRC is required"),
+
+        isrc: z
+          .string()
+          .min(1, "Click generate ISRC to generate ISRC if you don't have one"),
         previewStart: z.string().optional(),
         trackOrigin: z.string().min(1, "Track Origin is required"),
         explicitContent: z.string().min(1, "Please select explicit status"),
         trackLanguage: z.string().min(1, "Track Language is required"),
         isInstrumental: z.boolean().default(false),
+        writers: z
+          .array(
+            z.object({
+              role: z.string().min(1, "Role is required"),
+              name: z.string().min(1, "Name is required"),
+            }),
+          )
+          .refine(
+            (writers) => {
+              const hasComposer = writers.some(
+                (writer) => writer.role === "Composer",
+              );
+              const hasLyricist = writers.some(
+                (writer) => writer.role === "Lyricist",
+              );
+
+              return hasComposer && hasLyricist;
+            },
+            {
+              message: "Both Composer and Lyricist must be added.",
+            },
+          ),
       }),
     )
     .min(1, "At least one audio track is required"),

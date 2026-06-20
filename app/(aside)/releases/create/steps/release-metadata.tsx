@@ -72,6 +72,7 @@ export default function ReleaseMetadata({ formMethods }: ReleaseMetadataProps) {
           <Input
             placeholder="e.g. Moonlight Memories"
             {...register("releaseTitle")}
+            className={errors.releaseTitle ? "border-destructive focus-visible:ring-destructive" : ""}
           />
           <FieldError>{errors.releaseTitle?.message}</FieldError>
         </Field>
@@ -235,7 +236,7 @@ export default function ReleaseMetadata({ formMethods }: ReleaseMetadataProps) {
           label="Original Release Date *"
           name="originalReleaseDate"
           control={control}
-          disabledDays={(date) => date > new Date()}
+          // disabledDays={(date) => date > new Date()}
         />
 
         {/* Digital Release Date */}
@@ -243,7 +244,7 @@ export default function ReleaseMetadata({ formMethods }: ReleaseMetadataProps) {
           label="Digital Release Date *"
           name="releaseDate"
           control={control}
-          disabledDays={(date) => date > new Date()}
+          // disabledDays={(date) => date > new Date()}
         />
       </FieldGroup>
     </div>
