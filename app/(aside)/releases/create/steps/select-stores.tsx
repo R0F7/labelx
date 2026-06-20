@@ -39,7 +39,7 @@ export default function SelectStores({ formMethods }: { formMethods: any }) {
         <div
           onClick={toggleSelectAll}
           className={cn(
-            "p-3 rounded-2xl border text-center flex flex-col items-center justify-center transition-all cursor-pointer border-border text-sm font-medium hover:bg-primary/5",
+            "p-3 border text-center flex flex-col items-center justify-center transition-all cursor-pointer border-border text-sm font-medium hover:bg-primary/5",
             selectedStores.length === allStores.length && "border-primary bg-primary/10 ring-1 ring-primary"
           )}
         >
@@ -54,7 +54,7 @@ export default function SelectStores({ formMethods }: { formMethods: any }) {
               key={store.id}
               onClick={() => toggleStore(store.name)}
               className={cn(
-                "p-3 rounded-2xl border text-center flex flex-col items-center justify-center transition-all cursor-pointer border-border text-sm font-medium hover:bg-primary/5",
+                "p-3 border text-center flex flex-col items-center justify-center transition-all cursor-pointer border-border text-sm font-medium hover:bg-primary/5",
                 isSelected && "border-primary bg-primary/10 ring-1 ring-primary"
               )}
             >

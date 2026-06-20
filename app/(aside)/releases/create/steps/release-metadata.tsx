@@ -109,7 +109,7 @@ export default function ReleaseMetadata({ formMethods }: ReleaseMetadataProps) {
       </FieldGroup>
 
       {/* artist */}
-      <div className="border rounded-lg p-4 bg-muted/30 space-y-4">
+      <div className="border p-4 bg-muted/30 space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="text-sm font-medium">Artists Management *</h3>
           <Button

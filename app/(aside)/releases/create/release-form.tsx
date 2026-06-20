@@ -3,8 +3,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { MetadataFormValues } from "./schemas/metadata";
-
 import ReleaseMetadata from "./steps/release-metadata";
 import ReleaseArtwork from "./steps/release-artwork";
 import UploadTracks from "./steps/upload-tracks";
@@ -25,7 +23,7 @@ const steps = [
 ];
 
 export default function ReleaseForm() {
-  const [currentStep, setCurrentStep] = useState(4);
+  const [currentStep, setCurrentStep] = useState(1);
 
   const methods = useForm<MasterReleaseFormValues>({
     resolver: zodResolver(masterReleaseSchema),
@@ -43,7 +41,7 @@ export default function ReleaseForm() {
       releaseDate: "",
       artwork: null,
       tracks: [],
-      stores: []
+      stores: [],
     },
     mode: "onChange",
   });
@@ -122,7 +120,7 @@ export default function ReleaseForm() {
     }
   };
 
-  const onSubmit = (data: MetadataFormValues) => {
+  const onSubmit = (data: MasterReleaseFormValues) => {
     console.log("Final Submitted Data:", data);
     // API Call hobe ekhane
   };
@@ -136,9 +134,9 @@ export default function ReleaseForm() {
       case 3:
         return <UploadTracks formMethods={methods} />;
       case 4:
-        return <SelectStores formMethods={methods}/>;
+        return <SelectStores formMethods={methods} />;
       case 5:
-        return <ReviewRelease />;
+        return <ReviewRelease formMethods={methods} />;
       default:
         return null;
     }
@@ -168,7 +166,7 @@ export default function ReleaseForm() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-        <div className="border rounded-lg p-6 bg-card">{renderStep()}</div>
+        <div className="border p-6 bg-card">{renderStep()}</div>
 
         <div className="flex justify-between">
           <Button

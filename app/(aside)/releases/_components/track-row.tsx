@@ -108,7 +108,7 @@ export default function TrackRow({
     <div className="flex flex-col space-y-1">
       <div
         className={cn(
-          "flex items-center justify-between p-4 bg-background border border-border rounded-xl transition-all",
+          "flex items-center justify-between p-4 bg-background border border-border transition-all",
           fileError && "border-destructive/60 bg-destructive/5",
           isDone
             ? "border-emerald-500/50 bg-emerald-500/5"
@@ -182,7 +182,7 @@ export default function TrackRow({
                   </Field>
 
                   {/* Artists Array */}
-                  <div className="border rounded-lg p-4 bg-muted/30 space-y-4">
+                  <div className="border p-4 bg-muted/30 space-y-4">
                     <div className="flex justify-between items-center">
                       <h3 className="text-sm font-medium">
                         Artists Management *
@@ -291,7 +291,7 @@ export default function TrackRow({
                           onClick={handleGenerateISRC}
                           className="text-xs text-primary font-medium hover:underline focus:outline-none"
                         >
-                          ( Generate ISRC )
+                          ( Generate )
                         </button>
                       </FieldLabel>
                       <Input
@@ -343,7 +343,7 @@ export default function TrackRow({
                     emptyPlaceholder="No language found."
                   />
 
-                  <div className="flex items-center justify-between border border-border rounded-md p-4 bg-accent/10 mt-2">
+                  <div className="flex items-center justify-between border border-border p-4 bg-accent/10 mt-2">
                     <div>
                       <p className="text-xs font-semibold text-foreground">
                         Instrumental Track

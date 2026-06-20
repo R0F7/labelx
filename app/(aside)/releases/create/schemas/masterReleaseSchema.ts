@@ -89,7 +89,7 @@ export const masterReleaseSchema = z.object({
 
         isrc: z
           .string()
-          .min(1, "Click generate ISRC to generate ISRC if you don't have one"),
+          .min(1, "Click Generate to generate ISRC if you don't have one"),
         previewStart: z.string().optional(),
         trackOrigin: z.string().min(1, "Track Origin is required"),
         explicitContent: z.string().min(1, "Please select explicit status"),
@@ -121,6 +121,7 @@ export const masterReleaseSchema = z.object({
     )
     .min(1, "At least one audio track is required"),
 
+  //step 4: stores
   stores: z.array(z.string()).optional(),
 });
 

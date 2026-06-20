@@ -72,7 +72,7 @@ export const TrackWriters = ({
   return (
     <div
       className={cn(
-        "space-y-2 border rounded-md p-4 bg-card",
+        "space-y-2 border p-4 bg-muted/30",
         writerError ? "border-destructive" : "border-border",
       )}
     >
@@ -84,7 +84,7 @@ export const TrackWriters = ({
         {fields.map((field: any, index) => (
           <span
             key={field.id}
-            className="flex items-center gap-1 rounded-md bg-muted px-3 py-1 text-sm border border-border"
+            className="flex items-center gap-1 bg-muted px-3 py-1 text-sm border border-border"
           >
             <strong>{field.role}</strong> — {field.name}
             <button
