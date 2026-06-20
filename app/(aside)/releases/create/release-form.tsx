@@ -25,7 +25,7 @@ const steps = [
 ];
 
 export default function ReleaseForm() {
-  const [currentStep, setCurrentStep] = useState(3);
+  const [currentStep, setCurrentStep] = useState(4);
 
   const methods = useForm<MasterReleaseFormValues>({
     resolver: zodResolver(masterReleaseSchema),
@@ -43,6 +43,7 @@ export default function ReleaseForm() {
       releaseDate: "",
       artwork: null,
       tracks: [],
+      stores: []
     },
     mode: "onChange",
   });
@@ -135,7 +136,7 @@ export default function ReleaseForm() {
       case 3:
         return <UploadTracks formMethods={methods} />;
       case 4:
-        return <SelectStores />;
+        return <SelectStores formMethods={methods}/>;
       case 5:
         return <ReviewRelease />;
       default:

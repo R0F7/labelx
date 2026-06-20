@@ -174,3 +174,161 @@ export const explicitContentOptions = [
   { label: "Explicit", value: "Yes" },
   { label: "No Explicit", value: "No" },
 ];
+
+export const allStores = [
+  {
+    id: "amazon-music",
+    name: "Amazon Music",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/amazon.svg",
+  },
+  {
+    id: "anghami",
+    name: "Anghami",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/anghami.svg",
+  },
+  {
+    id: "audiomack",
+    name: "Audiomack",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/audiomack.svg",
+  },
+  {
+    id: "awa",
+    name: "AWA",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/awa.svg",
+  },
+  {
+    id: "boomplay",
+    name: "Boomplay",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/boomplay.svg",
+  },
+  {
+    id: "deezer",
+    name: "Deezer",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/deezer.svg",
+  },
+  {
+    id: "facebook",
+    name: "Facebook",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/facebook.svg",
+  },
+  {
+    id: "flo",
+    name: "Flo",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/flo.svg",
+  },
+  {
+    id: "iheartradio",
+    name: "iHeartRadio",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/iheart.svg",
+  },
+  {
+    id: "imusica",
+    name: "iMusica",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/imusica.svg",
+  },
+  {
+    id: "itunes",
+    name: "iTunes",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/iTunes.svg",
+  },
+  {
+    id: "jaxsta",
+    name: "Jaxsta",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/jaxsta.svg",
+  },
+  {
+    id: "jiosaavn",
+    name: "JioSaavn",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/saavn.svg",
+  },
+  {
+    id: "joox",
+    name: "JOOX",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/joox.svg",
+  },
+  {
+    id: "kkbox",
+    name: "KKBOX",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/kkbox.svg",
+  },
+  {
+    id: "lickd",
+    name: "Lickd",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/lickd.svg",
+  },
+  {
+    id: "mixcloud",
+    name: "Mixcloud",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/mixcloud.svg",
+  },
+  {
+    id: "napster",
+    name: "Napster",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/napster.svg",
+  },
+  {
+    id: "netease",
+    name: "NetEase",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/netease.svg",
+  },
+  {
+    id: "nuuday",
+    name: "Nuuday",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/nuuday.svg",
+  },
+  {
+    id: "pandora",
+    name: "Pandora",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/pandora.svg",
+  },
+  {
+    id: "peloton",
+    name: "Peloton",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/peloton.svg",
+  },
+  {
+    id: "pretzel",
+    name: "Pretzel",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/pretzel.svg",
+  },
+  {
+    id: "snapchat",
+    name: "Snapchat",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/snapchat.svg",
+  },
+  {
+    id: "soundcloud",
+    name: "SoundCloud",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/soundcloud.svg",
+  },
+  {
+    id: "spotify",
+    name: "Spotify",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/spotify.svg",
+  },
+  {
+    id: "tencent",
+    name: "Tencent",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/tencent.svg",
+  },
+  {
+    id: "tidal",
+    name: "Tidal",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/tidal.svg",
+  },
+  {
+    id: "tiktok",
+    name: "TikTok",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/tikTok.svg",
+  },
+  {
+    id: "trebel",
+    name: "Trebel",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/trebel.svg",
+  },
+  {
+    id: "youtube",
+    name: "YouTube",
+    logo: "https://arh-music.s3.ap-south-1.amazonaws.com/stores-icons/youtube.svg",
+  },
+];
