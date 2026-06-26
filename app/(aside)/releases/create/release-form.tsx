@@ -12,7 +12,8 @@ import { Button } from "@/components/ui/button";
 import {
   MasterReleaseFormValues,
   masterReleaseSchema,
-} from "./schemas/masterReleaseSchema";
+} from "./schema/masterReleaseSchema";
+import { toast } from "sonner";
 
 const steps = [
   { id: 1, title: "Release Metadata" },
@@ -46,9 +47,15 @@ export default function ReleaseForm() {
     mode: "onChange",
   });
 
-  const { trigger, handleSubmit } = methods;
+  const {
+    trigger,
+    handleSubmit,
+    formState: { isSubmitting },
+  } = methods;
 
-  const nextStep = async () => {
+  const nextStep = async (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+
     if (currentStep === 1) {
       const isValid = await trigger([
         "metadataLanguage",
@@ -120,10 +127,116 @@ export default function ReleaseForm() {
     }
   };
 
-  const onSubmit = (data: MasterReleaseFormValues) => {
-    console.log("Final Submitted Data:", data);
-    // API Call hobe ekhane
+  const onSubmit = async (data: MasterReleaseFormValues) => {
+    try {
+      const formData = new FormData();
+
+      formData.append("metadata", JSON.stringify(data));
+
+      if (data.artwork) {
+        formData.append("artwork", data.artwork);
+      }
+
+      data.tracks.forEach((track) => {
+        if (track.file) {
+          formData.append("tracks", track.file);
+        }
+      });
+      console.log(data);
+
+      const res = await fetch("/api/releases", {
+        method: "POST",
+        body: formData,
+      });
+
+      const json = await res.json();
+      if (!json?.success) {
+        toast.error(json?.message || `Failed to add release`);
+      } else {
+        toast.success(json?.message);
+      }
+    } catch (error) {
+      console.error(error);
+    }
   };
+
+  // const onSubmit = async (data: MasterReleaseFormValues) => {
+  //   try {
+  //     const urlResponse = await fetch("/api/releases/upload-url", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         artwork: data.artwork
+  //           ? { name: data.artwork.name, type: data.artwork.type }
+  //           : null,
+  //         tracks: data.tracks.map((t) => ({
+  //           name: t.file.name,
+  //           type: t.file.type,
+  //         })),
+  //       }),
+  //     });
+
+  //     const urlData = await urlResponse.json();
+  //     if (!urlData.success)
+  //       throw new Error(urlData.message || "Failed to get upload links");
+
+  //     // S3 আপলোডের জন্য res.ok চেক করার হেল্পার ফাংশন
+  //     const uploadToS3 = async (url: string, file: File) => {
+  //       const res = await fetch(url, {
+  //         method: "PUT",
+  //         body: file,
+  //         headers: { "Content-Type": file.type },
+  //       });
+  //       if (!res.ok) {
+  //         throw new Error(`Failed to upload file: ${file.name}`);
+  //       }
+  //       return res;
+  //     };
+
+  //     const uploadPromises = [];
+  //     let artworkKey = urlData.artwork?.key || null;
+
+  //     if (data.artwork && urlData.artwork?.url) {
+  //       uploadPromises.push(uploadToS3(urlData.artwork.url, data.artwork));
+  //     }
+
+  //     data.tracks.forEach((track, index) => {
+  //       if (track.file && urlData.tracks[index]?.url) {
+  //         uploadPromises.push(
+  //           uploadToS3(urlData.tracks[index].url, track.file),
+  //         );
+  //       }
+  //     });
+
+  //     toast.info("Uploading assets directly to secure storage...");
+  //     // এবার কোনো একটি ফাইলও যদি S3 তে ফেইল করে, Promise.all সাথে সাথে ক্র্যাশ করবে ও ক্যাচ ব্লকে চলে যাবে
+  //     await Promise.all(uploadPromises);
+
+  //     toast.info("Saving metadata to database...");
+
+  //     const res = await fetch("/api/releases", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         metadata: data,
+  //         artworkKey: artworkKey,
+  //         tracksWithKeys: urlData.tracks.map((t: any) => ({ key: t.key })),
+  //       }),
+  //     });
+
+  //     const json = await res.json();
+  //     if (!json?.success) {
+  //       toast.error(json?.message || `Failed to add release`);
+  //     } else {
+  //       toast.success(json?.message);
+  //     }
+  //   } catch (error: any) {
+  //     console.error(error);
+  //     toast.error(
+  //       error.message || "An error occurred during upload. Please try again.",
+  //     );
+  //   }
+  // };
 
   const renderStep = () => {
     switch (currentStep) {
@@ -179,9 +292,11 @@ export default function ReleaseForm() {
           </Button>
 
           {currentStep === steps.length ? (
-            <Button type="submit">Create Release</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Creating..." : "Create Release"}
+            </Button>
           ) : (
-            <Button type="button" onClick={nextStep}>
+            <Button type="button" onClick={(e) => nextStep(e)}>
               Continue
             </Button>
           )}

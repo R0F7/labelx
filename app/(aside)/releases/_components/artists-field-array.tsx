@@ -4,7 +4,7 @@ import { useState } from "react";
 import { UseFormReturn, useFieldArray } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
-import { MasterReleaseFormValues } from "../create/schemas/masterReleaseSchema";
+import { MasterReleaseFormValues } from "../create/schema/masterReleaseSchema";
 import FormSelect from "./form-select";
 import { artistTypeOptions } from "../data/data";
 import AsyncCmdbox from "./async-cmdbox";

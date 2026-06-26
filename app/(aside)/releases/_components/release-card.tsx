@@ -3,10 +3,11 @@ import Image from "next/image";
 import React from "react";
 import { Play } from "lucide-react"; // Assuming you use lucide-react (standard with shadcn)
 import Link from "next/link";
+import { resolveS3Url } from "@/lib/s3-client";
 
 interface ReleaseType {
   id: number;
-  image?: string;
+  artwork?: string;
   title: string;
   status: string;
   artists?: string[];
@@ -18,9 +19,9 @@ function ReleaseCard({ release }: { release: ReleaseType }) {
       <div className="relative w-full space-y-3 bg-card p-3 transition-all hover:shadow-lg">
         {/* Image Container */}
         <div className="relative aspect-square overflow-hidden bg-muted">
-          {release.image && (
+          {release.artwork && (
             <Image
-              src={release.image!}
+              src={resolveS3Url(release.artwork)}
               alt="Release artwork"
               fill
               className="object-cover transition-transform duration-300"

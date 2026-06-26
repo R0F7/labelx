@@ -5,7 +5,7 @@ import { Controller, UseFormReturn } from "react-hook-form";
 import { UploadCloud, Image as ImageIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError } from "@/components/ui/field";
-import { MasterReleaseFormValues } from "../schemas/masterReleaseSchema";
+import { MasterReleaseFormValues } from "../schema/masterReleaseSchema";
 import Image from "next/image";
 
 interface ReleaseArtworkProps {

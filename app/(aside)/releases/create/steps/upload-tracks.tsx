@@ -4,7 +4,7 @@ import * as React from "react";
 import { useFieldArray, UseFormReturn } from "react-hook-form";
 import { Upload, Loader2, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { MasterReleaseFormValues } from "../schemas/masterReleaseSchema";
+import { MasterReleaseFormValues } from "../schema/masterReleaseSchema";
 import { parseBlob } from "music-metadata-browser";
 import SparkMD5 from "spark-md5";
 import TrackRow from "../../_components/track-row";

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { MasterReleaseFormValues } from "../create/schemas/masterReleaseSchema";
+import { MasterReleaseFormValues } from "../create/schema/masterReleaseSchema";
 import {
   Controller,
   useFieldArray,

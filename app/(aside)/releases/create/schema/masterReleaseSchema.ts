@@ -16,6 +16,16 @@ export const masterReleaseSchema = z.object({
         }),
       }),
     )
+    // .superRefine((artists, ctx) => {
+    //   const ids = artists.map((a) => a.artistData.id);
+
+    //   if (new Set(ids).size !== ids.length) {
+    //     ctx.addIssue({
+    //       code: z.ZodIssueCode.custom,
+    //       message: "Duplicate artists are not allowed",
+    //     });
+    //   }
+    // })
     .min(1, "At least one primary artist is required"),
   primaryGenre: z.string().min(1, "Primary genre is required"),
   secondaryGenre: z.string().optional(),
@@ -24,6 +34,12 @@ export const masterReleaseSchema = z.object({
     name: z.string(),
   }),
   upc: z.string().optional(),
+  // upc: z
+  // .string()
+  // .regex(/^\d{12,13}$/, "UPC must be 12-13 digits")
+  // .optional()
+  // .or(z.literal("")),
+
   originalReleaseDate: z.string().min(1, "Original release date is required"),
   releaseDate: z.string().min(1, "Digital release date is required"),
 
@@ -90,7 +106,20 @@ export const masterReleaseSchema = z.object({
         isrc: z
           .string()
           .min(1, "Click Generate to generate ISRC if you don't have one"),
+        // isrc: z
+        //   .string()
+        //   .regex(/^[A-Z]{2}[A-Z0-9]{3}\d{7}$/, "Invalid ISRC format")
+        //   .min(1, "Click Generate to generate ISRC if you don't have one"),
+
         previewStart: z.string().optional(),
+        //       previewStart: z
+        // .string()
+        // .regex(
+        //   /^([0-5]?\d):([0-5]\d)$/,
+        //   "Format MM:SS"
+        // )
+        // .optional()
+
         trackOrigin: z.string().min(1, "Track Origin is required"),
         explicitContent: z.string().min(1, "Please select explicit status"),
         trackLanguage: z.string().min(1, "Track Language is required"),
@@ -118,6 +147,21 @@ export const masterReleaseSchema = z.object({
             },
           ),
       }),
+      //   .refine(
+      //   (track) => {
+      //     const hasComposer = track.writers.some((w) => w.role === "Composer");
+      //     const hasLyricist = track.writers.some((w) => w.role === "Lyricist");
+
+      //     if (track.isInstrumental) {
+      //       return hasComposer; // ইন্সট্রুমেন্টাল হলে শুধু কম্পোজার থাকলেই হবে
+      //     }
+      //     return hasComposer && hasLyricist; // ভোকাল গান হলে দুটোই লাগবে
+      //   },
+      //   {
+      //     message: "Vocal tracks require both Composer and Lyricist. Instrumental tracks only require a Composer.",
+      //     path: ["writers"], // এরর মেসেজটি যেন writers ফিল্ডে দেখায়
+      //   }
+      // )
     )
     .min(1, "At least one audio track is required"),
 

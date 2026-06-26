@@ -9,7 +9,14 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
-function Page() {
+interface PageProps {
+  searchParams: Promise<{
+    cursor?: string;
+    direction?: "next" | "prev";
+  }>;
+}
+
+function Page({ searchParams }: PageProps) {
   return (
     <>
       <section className="p-4 space-y-4">
@@ -45,7 +52,7 @@ function Page() {
             </div>
           }
         >
-          <ReleaseGrid />
+          <ReleaseGrid searchParams={searchParams}/>
         </Suspense>
       </section>
     </>

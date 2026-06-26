@@ -22,7 +22,7 @@ import AsyncCmdbox from "../../_components/async-cmdbox";
 import FormDatePicker from "../../_components/form-date-picker";
 import { Plus, Trash2 } from "lucide-react";
 import FormSelect from "../../_components/form-select";
-import { MasterReleaseFormValues } from "../schemas/masterReleaseSchema";
+import { MasterReleaseFormValues } from "../schema/masterReleaseSchema";
 
 interface ReleaseMetadataProps {
   formMethods: UseFormReturn<MasterReleaseFormValues>;
@@ -42,12 +42,14 @@ export default function ReleaseMetadata({ formMethods }: ReleaseMetadataProps) {
   const [artists, setArtists] = useState<{ id: number; name: string }[]>([]);
   const [labels, setLabel] = useState<{ id: number; name: string }[]>([]);
 
+  // TODO: use debounce
   const searchArtists = async (search: string) => {
     const res = await fetch(`/api/artists/search?query=${search}`);
     const data = await res.json();
     setArtists(data.data);
   };
 
+  // TODO: use debounce
   const searchLabels = async (search: string) => {
     const res = await fetch(`/api/labels/search?query=${search}`);
     const data = await res.json();
@@ -72,7 +74,11 @@ export default function ReleaseMetadata({ formMethods }: ReleaseMetadataProps) {
           <Input
             placeholder="e.g. Moonlight Memories"
             {...register("releaseTitle")}
-            className={errors.releaseTitle ? "border-destructive focus-visible:ring-destructive" : ""}
+            className={
+              errors.releaseTitle
+                ? "border-destructive focus-visible:ring-destructive"
+                : ""
+            }
           />
           <FieldError>{errors.releaseTitle?.message}</FieldError>
         </Field>
