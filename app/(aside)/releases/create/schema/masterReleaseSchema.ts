@@ -33,12 +33,12 @@ export const masterReleaseSchema = z.object({
     id: z.string().min(1, "Label is required"),
     name: z.string(),
   }),
-  upc: z.string().optional(),
-  // upc: z
-  // .string()
-  // .regex(/^\d{12,13}$/, "UPC must be 12-13 digits")
-  // .optional()
-  // .or(z.literal("")),
+  // upc: z.string().optional(),
+  upc: z
+    .string()
+    .regex(/^\d{12,13}$/, "UPC must be 12-13 digits")
+    .optional()
+    .or(z.literal("")),
 
   originalReleaseDate: z.string().min(1, "Original release date is required"),
   releaseDate: z.string().min(1, "Digital release date is required"),
@@ -47,34 +47,43 @@ export const masterReleaseSchema = z.object({
   artwork: z
     .any()
     .refine((file) => !!file, "Artwork is required")
-    .refine(
-      (file) =>
-        !file || file.type === "image/jpeg" || file.type === "image/jpg",
-      "Format: JPG only",
-    )
-    .refine(
-      (file) => !file || file.size <= 10 * 1024 * 1024,
-      "Maximum file size: 10MB",
-    )
     .superRefine(async (file, ctx) => {
-      if (!file || !(file instanceof File)) return;
+      if (typeof file === "string") return;
 
-      const dimensions = await new Promise<{ width: number; height: number }>(
-        (resolve) => {
-          const img = new Image();
-          img.src = URL.createObjectURL(file);
-          img.onload = () => {
-            resolve({ width: img.width, height: img.height });
-            URL.revokeObjectURL(img.src);
-          };
-        },
-      );
+      if (file instanceof File) {
+        if (file.type !== "image/jpeg" && file.type !== "image/jpg") {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Format: JPG only",
+          });
+          return;
+        }
 
-      if (dimensions.width !== 3000 || dimensions.height !== 3000) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `Image must be 3000x3000px (Detected: ${dimensions.width}x${dimensions.height}px)`,
-        });
+        if (file.size > 10 * 1024 * 1024) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Maximum file size: 10MB",
+          });
+          return;
+        }
+
+        const dimensions = await new Promise<{ width: number; height: number }>(
+          (resolve) => {
+            const img = new Image();
+            img.src = URL.createObjectURL(file);
+            img.onload = () => {
+              resolve({ width: img.width, height: img.height });
+              URL.revokeObjectURL(img.src);
+            };
+          },
+        );
+
+        if (dimensions.width !== 3000 || dimensions.height !== 3000) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Image must be 3000x3000px (Detected: ${dimensions.width}x${dimensions.height}px)`,
+          });
+        }
       }
     }),
 
@@ -82,7 +91,13 @@ export const masterReleaseSchema = z.object({
   tracks: z
     .array(
       z.object({
-        file: z.any().refine((file) => !!file, "Audio file is required"),
+        file: z
+          .any()
+          .refine((file) => !!file, "Audio file is required")
+          .superRefine((file, ctx) => {
+            if (typeof file === "string") return;
+          }),
+
         title: z.string().min(1, "Track Title is required"),
         customError: z.string().optional(),
         hash: z.string().optional(),
@@ -102,23 +117,17 @@ export const masterReleaseSchema = z.object({
           .min(1, "At least one primary artist is required"),
         primaryGenre: z.string().min(1, "Primary Genre is required"),
         secondaryGenre: z.string().optional(),
-
         isrc: z
           .string()
+          .regex(/^[A-Z]{2}[A-Z0-9]{3}\d{7}$/, "Invalid ISRC format")
           .min(1, "Click Generate to generate ISRC if you don't have one"),
-        // isrc: z
-        //   .string()
-        //   .regex(/^[A-Z]{2}[A-Z0-9]{3}\d{7}$/, "Invalid ISRC format")
-        //   .min(1, "Click Generate to generate ISRC if you don't have one"),
 
-        previewStart: z.string().optional(),
-        //       previewStart: z
-        // .string()
-        // .regex(
-        //   /^([0-5]?\d):([0-5]\d)$/,
-        //   "Format MM:SS"
-        // )
-        // .optional()
+        previewStart: z
+          .string()
+          .optional()
+          .refine((val) => !val || /^\d{2}:[0-5]\d$/.test(val), {
+            message: "Invalid format. Must be MM:SS (e.g., 01:20)",
+          }),
 
         trackOrigin: z.string().min(1, "Track Origin is required"),
         explicitContent: z.string().min(1, "Please select explicit status"),
@@ -153,13 +162,13 @@ export const masterReleaseSchema = z.object({
       //     const hasLyricist = track.writers.some((w) => w.role === "Lyricist");
 
       //     if (track.isInstrumental) {
-      //       return hasComposer; // ইন্সট্রুমেন্টাল হলে শুধু কম্পোজার থাকলেই হবে
+      //       return hasComposer;
       //     }
-      //     return hasComposer && hasLyricist; // ভোকাল গান হলে দুটোই লাগবে
+      //     return hasComposer && hasLyricist;
       //   },
       //   {
       //     message: "Vocal tracks require both Composer and Lyricist. Instrumental tracks only require a Composer.",
-      //     path: ["writers"], // এরর মেসেজটি যেন writers ফিল্ডে দেখায়
+      //     path: ["writers"],
       //   }
       // )
     )

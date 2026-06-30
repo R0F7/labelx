@@ -3,6 +3,8 @@ import { db } from "@/lib/db";
 import { releasesTable, releaseTracksTable } from "@/lib/schema";
 import { s3Client } from "@/lib/s3-client";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { generateOfficialUPC } from "@/lib/utils";
+import { eq } from "drizzle-orm";
 
 export async function POST(req: Request) {
   try {
@@ -131,6 +133,17 @@ export async function POST(req: Request) {
         })
         .returning();
 
+      let finalUpc = newRelease.upc;
+
+      if (!finalUpc) {
+        finalUpc = generateOfficialUPC(newRelease.id);
+
+        await tx
+          .update(releasesTable)
+          .set({ upc: finalUpc })
+          .where(eq(releasesTable.id, newRelease.id));
+      }
+
       const finalTracks = uploadedTracks.map((track) => ({
         ...track,
         releaseId: newRelease.id,
@@ -169,14 +182,13 @@ export async function POST(req: Request) {
 // }
 
 // export async function POST(req: Request) {
-//   // ক্যাচ ব্লকে পাওয়ার জন্য ভেরিয়েবলগুলো উপরে ডিক্লেয়ার করা হলো
 //   let artworkKey: string | null = null;
 //   let tracksWithKeys: any[] = [];
 
 //   try {
 //     const session = await verifySession();
 //     const body = await req.json();
-    
+
 //     const metadata = body.metadata;
 //     artworkKey = body.artworkKey;
 //     tracksWithKeys = body.tracksWithKeys || [];
@@ -233,7 +245,7 @@ export async function POST(req: Request) {
 //   } catch (error) {
 //     console.error("DB Transaction failed, triggering S3 cleanup:", error);
 
-//     // 🚨 S3 Orphan Cleanup Logic 🚨
+//     // S3 Orphan Cleanup Logic
 //     const objectsToDelete = [];
 //     if (artworkKey) objectsToDelete.push({ Key: artworkKey });
 //     if (tracksWithKeys.length > 0) {

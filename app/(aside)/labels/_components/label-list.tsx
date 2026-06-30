@@ -126,7 +126,7 @@ export default async function LabelsList({
 
   return (
     <>
-      <div className="rounded-md bg-card overflow-hidden">
+      <div className="overflow-hidden">
         <Table className="border">
           <TableHeader>
             <TableRow>

@@ -23,14 +23,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useRouter, useSearchParams } from "next/navigation"; 
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface RowActionsProps {
   id: number;
   displayTitle: string;
-  resourceName: string; 
+  resourceName: string;
   viewUrl?: string;
   editQueryKey?: string;
+  editPath?: string;
 }
 
 export function RowActions({
@@ -39,9 +40,10 @@ export function RowActions({
   resourceName,
   viewUrl,
   editQueryKey = "edit",
+  editPath,
 }: RowActionsProps) {
   const router = useRouter();
-  const searchParams = useSearchParams(); 
+  const searchParams = useSearchParams();
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
@@ -106,7 +108,7 @@ export function RowActions({
           {/* Edit Option */}
           <DropdownMenuItem asChild>
             <Link
-              href={editUrl} 
+              href={editPath || editUrl}
               scroll={false}
               className="cursor-pointer"
             >

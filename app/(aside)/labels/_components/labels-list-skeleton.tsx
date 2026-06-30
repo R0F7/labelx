@@ -12,7 +12,7 @@ export default function LabelsListSkeleton() {
   const skeletonRows = Array.from({ length: 5 });
 
   return (
-    <div className="rounded-md border">
+    <div className="border">
       <Table>
         <TableHeader>
           <TableRow>

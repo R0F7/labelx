@@ -61,7 +61,7 @@ export const POST = async (req: Request) => {
 
     let logoKey: string | undefined = undefined;
 
-    if (logo && logo.size > 0) {
+    if (logo && logo.size > 0) { 
       logoKey = crypto.randomUUID();
       const arrayBuffer = await logo.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);

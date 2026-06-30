@@ -2,19 +2,70 @@
 
 import * as React from "react";
 import { Controller, UseFormReturn } from "react-hook-form";
-import { UploadCloud, Image as ImageIcon, X } from "lucide-react";
+import { UploadCloud, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError } from "@/components/ui/field";
 import { MasterReleaseFormValues } from "../schema/masterReleaseSchema";
 import Image from "next/image";
+import { resolveS3Url } from "@/lib/s3-client";
 
 interface ReleaseArtworkProps {
   formMethods: UseFormReturn<MasterReleaseFormValues>;
 }
 
+interface ImagePreviewerProps {
+  value: string | File;
+  onRemove: () => void;
+}
+
+const ImagePreviewer = ({ value, onRemove }: ImagePreviewerProps) => {
+  const [previewUrl, setPreviewUrl] = React.useState<string>("");
+
+  React.useEffect(() => {
+    if (typeof value === "string") {
+      setPreviewUrl(resolveS3Url(value));
+    } else if (value instanceof File) {
+      const objectUrl = URL.createObjectURL(value);
+      setPreviewUrl(objectUrl);
+
+      return () => URL.revokeObjectURL(objectUrl);
+    }
+  }, [value]);
+
+  if (!previewUrl) return null;
+
+  return (
+    <>
+      <Image
+        src={previewUrl}
+        alt="Artwork Preview"
+        fill
+        sizes="(max-width: 768px) 100vw, 320px"
+        className="object-cover"
+        priority
+        unoptimized
+      />
+
+      {/* UX badge */}
+      <div className="absolute bottom-2 left-2 bg-black/70 text-white text-[10px] px-2 py-0.5 rounded pointer-events-none z-10">
+        {typeof value === "string" ? "Current Artwork" : "New Upload"}
+      </div>
+
+      <Button
+        type="button"
+        variant="destructive"
+        size="icon"
+        className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+        onClick={onRemove}
+      >
+        <X className="h-4 w-4" />
+      </Button>
+    </>
+  );
+};
+
 export default function ReleaseArtwork({ formMethods }: ReleaseArtworkProps) {
   const { control } = formMethods;
-  const [preview, setPreview] = React.useState<string | null>(null);
 
   return (
     <div className="space-y-6">
@@ -29,47 +80,21 @@ export default function ReleaseArtwork({ formMethods }: ReleaseArtworkProps) {
         name="artwork"
         control={control}
         render={({ field: { value, onChange }, fieldState: { error } }) => {
-          if (value && value instanceof File && !preview) {
-            setPreview(URL.createObjectURL(value));
-          }
-
           const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             const file = e.target.files?.[0];
             if (file) {
               onChange(file);
-              setPreview(URL.createObjectURL(file));
             }
-          };
-
-          const removeImage = () => {
-            onChange(null);
-            setPreview(null);
           };
 
           return (
             <Field className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
               <div className="w-full max-w-[320px] aspect-square mx-auto bg-muted rounded-xl overflow-hidden border-2 border-dashed border-border flex flex-col items-center justify-center relative group">
-                {preview ? (
-                  <>
-                    <Image
-                      src={preview}
-                      alt="Artwork Preview"
-                      fill
-                      sizes="(max-width: 768px) 100vw, 320px"
-                      className="object-cover"
-                      priority
-                      unoptimized
-                    />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={removeImage}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </>
+                {value ? (
+                  <ImagePreviewer
+                    value={value}
+                    onRemove={() => onChange(null)}
+                  />
                 ) : (
                   <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer p-6 text-center space-y-2 hover:bg-accent/50 transition-colors">
                     <UploadCloud className="h-10 w-10 text-muted-foreground" />

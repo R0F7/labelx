@@ -1,28 +1,44 @@
-import { and, gt, lt, desc, asc, SQL } from "drizzle-orm";
+import { and, gt, lt, desc, asc, SQL, ilike } from "drizzle-orm";
 import { db } from "@/lib/db";
+
+interface JoinParam {
+  targetTable: any;
+  on: SQL;
+  type?: "left" | "inner";
+}
 
 interface PaginationParams {
   table: any;
-  cursorColumn: any; 
-  cursorKey?: string; 
+  cursorColumn?: any;
+  searchQueryColumn: any;
+  cursorKey?: string;
   baseConditions?: (SQL | undefined)[];
+  searchQuery?: string;
   cursor?: number | null;
   direction?: "next" | "prev";
   limit?: number;
   columns?: any;
+  joins?: JoinParam[]; // নতুন যোগ করা হলো
 }
 
 export async function paginateWithCursor<T extends Record<string, any>>({
   table,
   cursorColumn,
+  searchQueryColumn,
   cursorKey = "id",
   baseConditions = [],
+  searchQuery,
   cursor,
   direction = "next",
   limit = 5,
   columns,
+  joins,
 }: PaginationParams) {
   let conditions = [...baseConditions].filter(Boolean);
+
+  if (searchQueryColumn && searchQuery) {
+    conditions.push(ilike(searchQueryColumn, `%${searchQuery}%`));
+  }
 
   if (cursor) {
     if (direction === "next") {
@@ -32,7 +48,19 @@ export async function paginateWithCursor<T extends Record<string, any>>({
     }
   }
 
-  let query = columns ? db.select(columns).from(table) : db.select().from(table);
+  let query: any = columns
+    ? db.select(columns).from(table)
+    : db.select().from(table);
+
+  if (joins && joins.length > 0) {
+    for (const j of joins) {
+      if (j.type === "inner") {
+        query = query.innerJoin(j.targetTable, j.on);
+      } else {
+        query = query.leftJoin(j.targetTable, j.on);
+      }
+    }
+  }
 
   if (conditions.length > 0) {
     query = query.where(and(...conditions));

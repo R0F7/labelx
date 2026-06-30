@@ -14,6 +14,7 @@ import {
   masterReleaseSchema,
 } from "./schema/masterReleaseSchema";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const steps = [
   { id: 1, title: "Release Metadata" },
@@ -23,26 +24,60 @@ const steps = [
   { id: 5, title: "Review" },
 ];
 
-export default function ReleaseForm() {
+export default function ReleaseForm({ initialData }) {
   const [currentStep, setCurrentStep] = useState(1);
+  const router = useRouter();
+  const isEditMode = !!initialData;
+
+  const formatInputDate = (dateString: string | Date | undefined | null) => {
+    if (!dateString) return "";
+    return new Date(dateString).toISOString().split("T")[0];
+  };
+
+  const formatDuration = (totalSeconds: number | string): string => {
+    const secondsNum = Number(totalSeconds);
+
+    if (isNaN(secondsNum) || secondsNum <= 0) return "00:00";
+
+    const minutes = Math.floor(secondsNum / 60);
+    const remainingSeconds = Math.floor(secondsNum % 60);
+
+    const paddedMinutes = String(minutes).padStart(2, "0");
+    const paddedSeconds = String(remainingSeconds).padStart(2, "0");
+
+    return `${paddedMinutes}:${paddedSeconds}`;
+  };
 
   const methods = useForm<MasterReleaseFormValues>({
     resolver: zodResolver(masterReleaseSchema),
     defaultValues: {
-      metadataLanguage: "",
-      releaseType: "",
-      releaseTitle: "",
-      titleVersion: "",
-      artists: [{ artistType: "", artistData: { id: "", name: "" } }],
-      primaryGenre: "",
-      secondaryGenre: "",
-      labelData: { id: "", name: "" },
-      upc: "",
-      originalReleaseDate: "",
-      releaseDate: "",
-      artwork: null,
-      tracks: [],
-      stores: [],
+      metadataLanguage: initialData?.language || "",
+      releaseType: initialData?.releaseType || "",
+      releaseTitle: initialData?.title || "",
+      titleVersion: initialData?.version || "",
+      artists: initialData?.artists || [
+        { artistType: "", artistData: { id: "", name: "" } },
+      ],
+      primaryGenre: initialData?.primaryGenre || "",
+      secondaryGenre: initialData?.secondaryGenre || "",
+      labelData: initialData?.label
+        ? {
+            id: String(initialData.label.id),
+            name: initialData.label.name,
+          }
+        : { id: "", name: "" },
+      upc: initialData?.upc || "",
+      originalReleaseDate:
+        formatInputDate(initialData?.originalReleaseDate) || "",
+      releaseDate: formatInputDate(initialData?.releaseDate) || "",
+      artwork: initialData?.artwork || null,
+      tracks:
+        initialData?.tracks?.map((track: any) => ({
+          ...track,
+          file: track.file || track.audioFile || null,
+          previewStart: formatDuration(track.previewStart),
+        })) || [],
+      stores: initialData?.stores || [],
     },
     mode: "onChange",
   });
@@ -53,11 +88,9 @@ export default function ReleaseForm() {
     formState: { isSubmitting },
   } = methods;
 
-  const nextStep = async (e?: React.MouseEvent) => {
-    if (e) e.preventDefault();
-
-    if (currentStep === 1) {
-      const isValid = await trigger([
+  const validateStep = async (stepToValidate: number): Promise<boolean> => {
+    if (stepToValidate === 1) {
+      return await trigger([
         "metadataLanguage",
         "releaseType",
         "releaseTitle",
@@ -67,15 +100,13 @@ export default function ReleaseForm() {
         "originalReleaseDate",
         "releaseDate",
       ]);
-      if (!isValid) return;
     }
 
-    if (currentStep === 2) {
-      const isValid = await trigger(["artwork"]);
-      if (!isValid) return;
+    if (stepToValidate === 2) {
+      return await trigger(["artwork"]);
     }
 
-    if (currentStep === 3) {
+    if (stepToValidate === 3) {
       const isValid = await trigger(["tracks"]);
       const currentTracks = methods.getValues("tracks") || [];
 
@@ -84,7 +115,7 @@ export default function ReleaseForm() {
           type: "manual",
           message: "At least one audio track is required.",
         });
-        return;
+        return false;
       }
 
       const hasAudioError = currentTracks.some((t) => !!t.customError);
@@ -112,12 +143,49 @@ export default function ReleaseForm() {
           message:
             "Please fill up track details/metadata for all tracks before continuing.",
         });
-        return;
+        return false;
       }
+      return true;
     }
 
-    if (currentStep < steps.length) {
+    // Step 4 (Stores) & Step 5 (Review)
+    return true;
+  };
+
+  const nextStep = async (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+
+    const isValid = await validateStep(currentStep);
+    if (isValid && currentStep < steps.length) {
       setCurrentStep((prev) => prev + 1);
+    }
+  };
+
+  const handleStepClick = async (targetStep: number) => {
+    if (targetStep === currentStep) return;
+
+    if (targetStep < currentStep) {
+      setCurrentStep(targetStep);
+      return;
+    }
+
+    let canProceed = true;
+    let stepToCheck = currentStep;
+
+    while (stepToCheck < targetStep) {
+      const isValid = await validateStep(stepToCheck);
+      if (!isValid) {
+        canProceed = false;
+        if (currentStep !== stepToCheck) {
+          setCurrentStep(stepToCheck);
+        }
+        break;
+      }
+      stepToCheck++;
+    }
+
+    if (canProceed) {
+      setCurrentStep(targetStep);
     }
   };
 
@@ -131,42 +199,64 @@ export default function ReleaseForm() {
     try {
       const formData = new FormData();
 
-      formData.append("metadata", JSON.stringify(data));
+      const cleanedTracks = data.tracks.map((track) => {
+        const { file, ...rest } = track;
+        return {
+          ...rest,
+          audioFile: file instanceof File ? track.audioFile : file,
+        };
+      });
 
-      if (data.artwork) {
+      const cleanedMetadata = {
+        ...data,
+        artwork:
+          data.artwork instanceof File ? initialData?.artwork : data.artwork,
+        tracks: cleanedTracks,
+      };
+
+      formData.append("metadata", JSON.stringify(cleanedMetadata));
+
+      if (data.artwork instanceof File) {
         formData.append("artwork", data.artwork);
       }
 
       data.tracks.forEach((track) => {
-        if (track.file) {
+        if (track.file instanceof File) {
           formData.append("tracks", track.file);
         }
       });
-      console.log(data);
+      // console.log(formData);
 
-      const res = await fetch("/api/releases", {
-        method: "POST",
-        body: formData,
-      });
+      const url = isEditMode
+        ? `/api/releases/${initialData.id}`
+        : "/api/releases";
+      const method = isEditMode ? "PATCH" : "POST";
 
+      const res = await fetch(url, { method: method, body: formData });
       const json = await res.json();
+
       if (!json?.success) {
-        toast.error(json?.message || `Failed to add release`);
+        toast.error(
+          json?.message ||
+            `Failed to ${isEditMode ? "update" : "save"} release`,
+        );
       } else {
         toast.success(json?.message);
+        router.push("/releases");
       }
     } catch (error) {
       console.error(error);
     }
   };
 
+  // upload track & artwork upload assets directly
   // const onSubmit = async (data: MasterReleaseFormValues) => {
   //   try {
   //     const urlResponse = await fetch("/api/releases/upload-url", {
   //       method: "POST",
   //       headers: { "Content-Type": "application/json" },
   //       body: JSON.stringify({
-  //         artwork: data.artwork
+  //         artwork: data.artwork instanceof File
   //           ? { name: data.artwork.name, type: data.artwork.type }
   //           : null,
   //         tracks: data.tracks.map((t) => ({
@@ -180,7 +270,6 @@ export default function ReleaseForm() {
   //     if (!urlData.success)
   //       throw new Error(urlData.message || "Failed to get upload links");
 
-  //     // S3 আপলোডের জন্য res.ok চেক করার হেল্পার ফাংশন
   //     const uploadToS3 = async (url: string, file: File) => {
   //       const res = await fetch(url, {
   //         method: "PUT",
@@ -209,7 +298,6 @@ export default function ReleaseForm() {
   //     });
 
   //     toast.info("Uploading assets directly to secure storage...");
-  //     // এবার কোনো একটি ফাইলও যদি S3 তে ফেইল করে, Promise.all সাথে সাথে ক্র্যাশ করবে ও ক্যাচ ব্লকে চলে যাবে
   //     await Promise.all(uploadPromises);
 
   //     toast.info("Saving metadata to database...");
@@ -263,16 +351,25 @@ export default function ReleaseForm() {
           {steps.map((step) => {
             const active = currentStep >= step.id;
             return (
-              <div key={step.id} className="flex flex-col items-center">
+              <button
+                key={step.id}
+                type="button"
+                onClick={() => handleStepClick(step.id)}
+                className="flex flex-col items-center focus:outline-none group cursor-pointer"
+              >
                 <div
-                  className={`h-10 w-10 rounded-full flex items-center justify-center text-sm font-medium border transition-all ${active ? "bg-primary text-primary-foreground border-primary" : "bg-background text-muted-foreground border-border"}`}
+                  className={`h-10 w-10 rounded-full flex items-center justify-center text-sm font-medium border transition-all ${
+                    active
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-background text-muted-foreground border-border group-hover:border-primary/50"
+                  }`}
                 >
                   {step.id}
                 </div>
-                <p className="hidden md:block mt-2 text-xs text-center">
+                <p className="hidden md:block mt-2 text-xs text-center transition-colors group-hover:text-primary">
                   {step.title}
                 </p>
-              </div>
+              </button>
             );
           })}
         </div>
@@ -293,7 +390,11 @@ export default function ReleaseForm() {
 
           {currentStep === steps.length ? (
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Creating..." : "Create Release"}
+              {isSubmitting
+                ? "Processing..."
+                : isEditMode
+                  ? "Save Changes"
+                  : "Add Release"}
             </Button>
           ) : (
             <Button type="button" onClick={(e) => nextStep(e)}>

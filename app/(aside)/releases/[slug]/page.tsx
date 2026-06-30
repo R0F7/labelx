@@ -2,20 +2,14 @@ import React from "react";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Calendar, Disc, Globe, Hash, PlayCircle, Clock3 } from "lucide-react";
+import { Calendar, Disc, Globe, Hash, PlayCircle } from "lucide-react";
 import { db } from "@/lib/db";
-import { releasesTable, releaseTracksTable } from "@/lib/schema";
+import { releasesTable } from "@/lib/schema";
 import { and, eq } from "drizzle-orm";
 import { verifySession } from "@/lib/auth";
 import { resolveS3Url } from "@/lib/s3-client";
+import TrackList from "./traking-list";
+import Link from "next/link";
 
 export default async function ReleasePage({
   params,
@@ -25,19 +19,11 @@ export default async function ReleasePage({
   const { slug } = await params;
   const session = await verifySession();
   const orgId = session.session.activeOrganizationId;
-  
+
   const conditions = [
     eq(releasesTable.id, Number(slug)),
     eq(releasesTable.organizationId, orgId),
   ];
-
-  // const releaseData = await db.query.releasesTable.findFirst({
-  //   where: and(...conditions),
-  //   with: {
-  //     tracks: true,
-  //     label: true,
-  //   },
-  // });
 
   const releaseData = await db.query.releasesTable.findFirst({
     where: and(...conditions),
@@ -62,6 +48,7 @@ export default async function ReleasePage({
           id: true,
           title: true,
           isrc: true,
+          audioFile: true,
           duration: true,
         },
       },
@@ -107,7 +94,10 @@ export default async function ReleasePage({
             <Button className="gap-2">
               <PlayCircle size={18} /> Play Preview
             </Button>
-            <Button variant="outline">Edit Metadata</Button>
+
+            <Link href={`/releases/create?id=${releaseData.id}`}>
+              <Button variant="outline">Edit Metadata</Button>
+            </Link>
           </div>
         </div>
       </section>
@@ -140,43 +130,7 @@ export default async function ReleasePage({
       </section>
 
       {/* --- TRACKLIST --- */}
-      <section className="space-y-4">
-        <h2 className="text-2xl font-semibold px-1">Tracklist</h2>
-        <div className="border">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-muted/50">
-                <TableHead className="w-[50px]">#</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>ISRC</TableHead>
-                <TableHead className="text-right">
-                  <Clock3 size={16} className="inline mr-2" />
-                  Duration
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {releaseData.tracks.map((track) => (
-                <TableRow
-                  key={track.id}
-                  className="group cursor-pointer hover:bg-muted/30"
-                >
-                  <TableCell className="font-medium text-muted-foreground py-4">
-                    {track.id}
-                  </TableCell>
-                  <TableCell className="font-semibold">{track.title}</TableCell>
-                  <TableCell className="font-mono text-xs text-muted-foreground uppercase tracking-tighter">
-                    {track.isrc}
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {track.duration}s
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </section>
+      <TrackList releaseData={releaseData} />
     </div>
   );
 }
