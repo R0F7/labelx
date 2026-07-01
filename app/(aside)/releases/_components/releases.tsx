@@ -16,7 +16,7 @@ interface PaginatedRelease {
   upc: string | null;
   artists: any;
   creatorName: string | null;
-  releaseDate: string | Date;
+  createdAt: string | Date;
 }
 
 export default async function Releases({
@@ -63,7 +63,7 @@ export default async function Releases({
         upc: releasesTable.upc,
         artists: releasesTable.artists,
         creatorName: user.name,
-        releaseDate: releasesTable.releaseDate,
+        createdAt: releasesTable.createdAt,
       },
     })as {
       data: PaginatedRelease[];

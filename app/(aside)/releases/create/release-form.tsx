@@ -31,7 +31,7 @@ export default function ReleaseForm({ initialData }) {
 
   const formatInputDate = (dateString: string | Date | undefined | null) => {
     if (!dateString) return "";
-    return new Date(dateString).toISOString().split("T")[0];
+    return new Date(dateString).toLocaleDateString().split("T")[0];
   };
 
   const formatDuration = (totalSeconds: number | string): string => {

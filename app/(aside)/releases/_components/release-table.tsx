@@ -17,7 +17,7 @@ interface Release {
   artwork?: string | null;
   upc?: string | null;
   creatorName?: string | null;
-  releaseDate: string | Date;
+  createdAt: string | Date;
   status: string;
 }
 
@@ -64,7 +64,7 @@ export default function ReleaseTable({ releases }: ReleaseTableProps) {
               <TableCell>{release.upc}</TableCell>
               <TableCell>{release.creatorName}</TableCell>
               <TableCell>
-                {new Date(release.releaseDate).toLocaleDateString()}
+                {new Date(release.createdAt).toLocaleDateString()}
               </TableCell>
               <TableCell>
                 <Badge>{release.status}</Badge>

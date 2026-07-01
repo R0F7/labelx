@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { UseFormReturn, useFieldArray } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -23,9 +22,15 @@ import FormDatePicker from "../../_components/form-date-picker";
 import { Plus, Trash2 } from "lucide-react";
 import FormSelect from "../../_components/form-select";
 import { MasterReleaseFormValues } from "../schema/masterReleaseSchema";
+import { useAsyncSearch } from "@/hooks/use-async-search";
 
 interface ReleaseMetadataProps {
   formMethods: UseFormReturn<MasterReleaseFormValues>;
+}
+
+interface SearchItem {
+  id: number | string;
+  name: string;
 }
 
 export default function ReleaseMetadata({ formMethods }: ReleaseMetadataProps) {
@@ -39,22 +44,9 @@ export default function ReleaseMetadata({ formMethods }: ReleaseMetadataProps) {
     control,
     name: "artists",
   });
-  const [artists, setArtists] = useState<{ id: number; name: string }[]>([]);
-  const [labels, setLabel] = useState<{ id: number; name: string }[]>([]);
 
-  // TODO: use debounce
-  const searchArtists = async (search: string) => {
-    const res = await fetch(`/api/artists/search?query=${search}`);
-    const data = await res.json();
-    setArtists(data.data);
-  };
-
-  // TODO: use debounce
-  const searchLabels = async (search: string) => {
-    const res = await fetch(`/api/labels/search?query=${search}`);
-    const data = await res.json();
-    setLabel(data.data);
-  };
+  const artistSearch = useAsyncSearch<SearchItem>("/api/artists/search");
+  const labelSearch = useAsyncSearch<SearchItem>("/api/labels/search");
 
   return (
     <div className="space-y-6">
@@ -163,11 +155,11 @@ export default function ReleaseMetadata({ formMethods }: ReleaseMetadataProps) {
                 label="Artist Name *"
                 name={`artists.${index}.artistData`}
                 control={control}
-                data={artists}
+                data={artistSearch.data}
                 placeholder="Search & select artist"
                 searchPlaceholder="Type artist name..."
                 emptyPlaceholder="No artist found."
-                onSearchChange={searchArtists}
+                onSearchChange={artistSearch.setSearchQuery}
               />
             </div>
 
@@ -220,11 +212,11 @@ export default function ReleaseMetadata({ formMethods }: ReleaseMetadataProps) {
           label="Label *"
           name="labelData"
           control={control}
-          data={labels}
+          data={labelSearch.data}
           placeholder="Select a label"
           searchPlaceholder="Search label..."
           emptyPlaceholder="No label found."
-          onSearchChange={searchLabels}
+          onSearchChange={labelSearch.setSearchQuery}
         />
 
         {/* UPC */}

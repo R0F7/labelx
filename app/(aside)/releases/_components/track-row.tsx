@@ -31,6 +31,12 @@ import Cmdbox from "./cmdbox";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { TrackWriters } from "./track-writers";
+import { useAsyncSearch } from "@/hooks/use-async-search";
+
+interface SearchItem {
+  id: number | string;
+  name: string;
+}
 
 export default function TrackRow({
   field,
@@ -55,10 +61,6 @@ export default function TrackRow({
   } = formMethods;
 
   const [isOpen, setIsOpen] = useState(false);
-  const [artistsList, setArtistsList] = useState<
-    { id: number; name: string }[]
-  >([]);
-
   const trackData = useWatch({
     control,
     name: `tracks.${index}`,
@@ -78,16 +80,7 @@ export default function TrackRow({
   const trackErrors = (errors.tracks as any)?.[index];
   const isDone = isMetadataComplete(trackData || field) && !fileError;
 
-  const searchArtists = async (search: string) => {
-    if (!search) return;
-    try {
-      const res = await fetch(`/api/artists/search?query=${search}`);
-      const data = await res.json();
-      setArtistsList(data.data);
-    } catch (err) {
-      console.error("Failed to search artists");
-    }
-  };
+  const artistSearch = useAsyncSearch<SearchItem>("/api/artists/search");
 
   const handleGenerateISRC = () => {
     const country = "QZ";
@@ -236,11 +229,11 @@ export default function TrackRow({
                             label="Artist Name *"
                             name={`tracks.${index}.artists.${artistIndex}.artistData`}
                             control={control}
-                            data={artistsList}
+                            data={artistSearch.data}
                             placeholder="Search & select artist"
                             searchPlaceholder="Type artist name..."
                             emptyPlaceholder="No artist found."
-                            onSearchChange={searchArtists}
+                            onSearchChange={artistSearch.setSearchQuery}
                           />
                         </div>
 
