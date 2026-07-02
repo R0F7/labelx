@@ -20,7 +20,6 @@ function Page({ searchParams }: PageProps) {
       <section className="p-4 space-y-4">
         <div className="w-full flex items-center justify-between gap-4">
           <Search />
-          {/* <AddRelease /> */}
 
           <div className="flex items-center gap-2">
             <ViewToggleBtn />

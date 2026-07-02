@@ -57,6 +57,7 @@ export function CreateTicket() {
       description: "",
     },
   });
+
   const onSubmit = async (data: TicketSchema) => {
     const res = await createNewTicket(data);
     if (res.success) {
@@ -68,6 +69,7 @@ export function CreateTicket() {
       setIsOpen(false);
     }
   };
+  
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>

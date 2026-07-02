@@ -1,25 +1,3 @@
-// import { Button } from "@/components/ui/button";
-// import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-// import { ArrowBendUpLeftIcon } from "@phosphor-icons/react/dist/ssr";
-// import React from "react";
-
-// function Page() {
-//   return (
-//     <>
-//       <div className="lg:col-span-8 space-y-4">
-//         <Card>
-//           <CardHeader>
-//             <CardTitle className="flex items-center gap-2"> <Button variant="ghost" size={'icon'}><ArrowBendUpLeftIcon size={20}/></Button> Lorem ipsum dolor sit amet.</CardTitle>
-//             <CardDescription>Lorem ipsum dolor sit amet consectetur adipisicing elit. Ullam, eius?</CardDescription>
-//           </CardHeader>
-//         </Card>
-//       </div>
-//     </>
-//   );
-// }
-
-// export default Page;
-
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -28,17 +6,45 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge"; // Assuming you have a Badge component
+import { Badge } from "@/components/ui/badge";
 import {
   ArrowBendUpLeftIcon,
   ClockIcon,
   UserIcon,
   TagIcon,
 } from "@phosphor-icons/react/dist/ssr";
-import React from "react";
 import Link from "next/link";
+import { ticketsTable } from "@/lib/schema";
+import { and, eq } from "drizzle-orm";
+import { verifySession } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { formatDistanceToNow } from "date-fns";
+import { user } from "@/auth-schema";
+import UpdateTicket from "../../update-ticket";
 
-function Page() {
+async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const session = await verifySession();
+  const orgId = session.session.activeOrganizationId;
+  const conditions = [
+    eq(ticketsTable.id, Number(id)),
+    eq(ticketsTable.organizationId, orgId),
+  ];
+
+  const [ticket] = await db
+    .select({
+      id: ticketsTable.id,
+      subject: ticketsTable.subject,
+      status: ticketsTable.status,
+      chats: ticketsTable.chats,
+      createdAt: ticketsTable.createdAt,
+      creatorName: user.name,
+    })
+    .from(ticketsTable)
+    .where(and(...conditions))
+    .leftJoin(user, eq(ticketsTable.createdBy, user.id))
+    .limit(1);
+
   return (
     <div className="lg:col-span-8 space-y-4">
       <div className="flex items-center gap-4 mb-6">
@@ -50,7 +56,7 @@ function Page() {
         <div>
           <h1 className="text-sm text-muted-foreground">Back to Tickets</h1>
           <p className="text-xs font-mono uppercase tracking-tight text-muted-foreground/60">
-            TICKET-#1024
+            TICKET-#{ticket.id}
           </p>
         </div>
       </div>
@@ -64,28 +70,51 @@ function Page() {
                   variant="secondary"
                   className="bg-blue-100 text-blue-700 hover:bg-blue-100"
                 >
-                  In Progress
+                  {ticket.status}
                 </Badge>
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  <ClockIcon size={14} /> 2 hours ago
+                  <ClockIcon size={14} />
+                  {formatDistanceToNow(new Date(ticket.createdAt), {
+                    addSuffix: true,
+                  })}
                 </span>
               </div>
               <CardTitle className="text-2xl font-bold leading-tight">
-                Lorem ipsum dolor sit amet consectetur.
+                {ticket.subject}
               </CardTitle>
               <CardDescription className="text-base pt-2">
-                Detailed description of the ticket goes here. This captures the
-                core issue or data label requirement.
+                {ticket.chats[0].message}
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
               <div className="prose prose-sm dark:prose-invert">
-                <p>
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                  Ullam, eius? Architecto, unde! Repellendus, quos. This section
-                  acts as the primary body for your data parsing notes or ticket
-                  history.
-                </p>
+                {ticket.chats && ticket.chats.length > 1 ? (
+                  ticket.chats.slice(1).map((chat, idx) => (
+                    <div
+                      key={idx}
+                      className="flex justify-between items-start py-2 border-b last:border-b-0"
+                    >
+                      <p className="text-sm text-zinc-700 dark:text-zinc-300">
+                        {chat.message}
+                      </p>
+                      <span className="text-xs text-muted-foreground flex items-center gap-1 shrink-0">
+                        <ClockIcon size={14} />
+                        {formatDistanceToNow(new Date(chat.timestamp), {
+                          addSuffix: true,
+                        })}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="flex flex-col items-center justify-center p-6 text-center border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/30">
+                    <p className="text-sm text-muted-foreground font-medium">
+                      No replies yet
+                    </p>
+                    <p className="text-xs text-zinc-400 mt-0.5">
+                      As soon as there is a response, it will appear here.
+                    </p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -102,19 +131,17 @@ function Page() {
                 <span className="text-muted-foreground flex items-center gap-2">
                   <UserIcon size={16} /> Assignee
                 </span>
-                <span className="font-medium">John Doe</span>
+                <span className="font-medium">{ticket.creatorName}</span>
               </div>
-              <div className="flex items-center justify-between text-sm">
+              {/* <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground flex items-center gap-2">
                   <TagIcon size={16} /> Label Group
                 </span>
                 <Badge variant="outline">Logistics</Badge>
-              </div>
+              </div> */}
               <hr className="border-muted" />
               <div className="pt-2">
-                <Button className="w-full" size="sm">
-                  Update Ticket
-                </Button>
+                <UpdateTicket key={ticket.id} ticketId={ticket.id} currentStatus={ticket.status} />
               </div>
             </CardContent>
           </Card>

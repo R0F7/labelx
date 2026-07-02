@@ -1,4 +1,4 @@
-import { and, gt, lt, desc, asc, SQL, ilike } from "drizzle-orm";
+import { and, gt, lt, desc, asc, SQL, ilike, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 
 interface JoinParam {
@@ -10,26 +10,32 @@ interface JoinParam {
 interface PaginationParams {
   table: any;
   cursorColumn?: any;
-  searchQueryColumn: any;
+  searchQueryColumn?: any;
+  statusQueryColumn?: any;
+  statusQuery?: string;
   cursorKey?: string;
   baseConditions?: (SQL | undefined)[];
   searchQuery?: string;
   cursor?: number | null;
   direction?: "next" | "prev";
+  orderBy?: any;
   limit?: number;
   columns?: any;
-  joins?: JoinParam[]; // নতুন যোগ করা হলো
+  joins?: JoinParam[];
 }
 
 export async function paginateWithCursor<T extends Record<string, any>>({
   table,
   cursorColumn,
   searchQueryColumn,
+  statusQueryColumn,
   cursorKey = "id",
   baseConditions = [],
   searchQuery,
+  statusQuery,
   cursor,
   direction = "next",
+  orderBy,
   limit = 5,
   columns,
   joins,
@@ -38,6 +44,10 @@ export async function paginateWithCursor<T extends Record<string, any>>({
 
   if (searchQueryColumn && searchQuery) {
     conditions.push(ilike(searchQueryColumn, `%${searchQuery}%`));
+  }
+
+  if (statusQueryColumn && statusQuery) {
+    conditions.push(eq(statusQueryColumn, statusQuery));
   }
 
   if (cursor) {
@@ -67,7 +77,13 @@ export async function paginateWithCursor<T extends Record<string, any>>({
   }
 
   query = query
-    .orderBy(direction === "prev" ? desc(cursorColumn) : asc(cursorColumn))
+    .orderBy(
+      orderBy
+        ? orderBy
+        : direction === "prev"
+          ? desc(cursorColumn)
+          : asc(cursorColumn),
+    )
     .limit(limit + 1);
 
   const data = (await query) as T[];

@@ -85,7 +85,8 @@ export default function SupportPage() {
           {/* Ticket List */}
           <Card className="border-none shadow-sm overflow-hidden py-0">
             <div className="divide-y">
-              {TICKETS.map((ticket) => (
+              {TICKETS.map((ticket) => {
+                return(
                 <div 
                   key={ticket.id} 
                   className="group flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-all cursor-pointer"
@@ -118,7 +119,8 @@ export default function SupportPage() {
                     <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-slate-500" />
                   </div>
                 </div>
-              ))}
+              )
+              })}
             </div>
           </Card>
         </div>

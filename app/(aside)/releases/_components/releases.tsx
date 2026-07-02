@@ -71,7 +71,7 @@ export default async function Releases({
       prevCursor: string | null;
       hasNextPage: boolean;
       hasPrevPage: boolean;
-    };;
+    };
 
   return (
     <div className="space-y-6">

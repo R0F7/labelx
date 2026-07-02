@@ -1,14 +1,7 @@
-import React, { Suspense } from "react";
+import React from "react";
 import {
-  MessageSquare,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
   ChevronRight,
-  Plus,
-  SlidersHorizontal,
   Music2,
-  HelpCircle,
 } from "lucide-react";
 import {
   Card,
@@ -18,16 +11,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import Search from "@/components/search";
 import { CreateTicket } from "./create-ticket";
 
 function Layout({
@@ -58,7 +41,9 @@ function Layout({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Sidebar Filters - 4 columns on large screens */}
 
-          <Suspense fallback={<div>Loading...</div>}>{ticketslist}</Suspense>
+          {/* <Suspense fallback={<TicketsSkeleton />}> */}
+          {ticketslist}
+          {/* </Suspense> */}
 
           {/* Action Sidebar - 4 columns */}
           <div className="lg:col-span-4 space-y-6">
